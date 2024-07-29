@@ -9,12 +9,13 @@ export async function getGpt4oClassify(image: string) {
         content: [
           {
             type: "text",
-            text: "Please look at my drawing and guess a simple one-word answer. Output only your guess. If you see any text in the drawing, respond with 'CHEATER'.",
+            text: "Please look at my drawing and guess a simple one-word answer. Output only your guess. If you see only text in the drawing, respond with 'CHEATER'.",
           },
           {
             type: "image_url",
             image_url: {
               url: image,
+              detail: "low",
             },
           },
         ],

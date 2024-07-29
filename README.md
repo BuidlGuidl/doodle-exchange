@@ -1,7 +1,7 @@
 # 🎨 Doodle Exchange
 
 <h4 align="center">
-  <a href="https://doodle-exchange.vercel.app/">Website</a>
+  <a href="https://doodle.exchange/">Website</a>
 </h4>
 
 <img width="1510" alt="image" src="https://github.com/user-attachments/assets/9726a222-d285-4b21-a1f5-2505f174ea89">

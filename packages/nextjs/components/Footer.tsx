@@ -28,9 +28,9 @@ export const Footer = () => {
             <div>
               <div
                 className="btn btn-primary btn-sm font-normal gap-1 cursor-auto"
-                onClick={() => window.open("https://github.com/AzimovS/fast-draw", "_blank")}
+                onClick={() => window.open("https://github.com/BuidlGuidl/doodle-exchange", "_blank")}
               >
-                <Image src={github.src} width={15} height={15} alt="Picture of the author" />
+                <Image src={github.src} width={15} height={15} alt="Github Logo" />
                 Fork me
               </div>
             </div>

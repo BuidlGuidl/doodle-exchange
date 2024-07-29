@@ -1,141 +1,88 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import Image from "next/image";
-import { getGpt4oClassify } from "./classify";
+import { Suspense, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import type { NextPage } from "next";
-import CanvasDraw from "react-canvas-draw";
-import { CirclePicker } from "react-color";
-import { useWindowSize } from "usehooks-ts";
-import { ArrowUturnLeftIcon, TrashIcon } from "@heroicons/react/24/outline";
-
-interface CanvasDrawLines extends CanvasDraw {
-  canvas: any;
-  props: {
-    brushColor: string;
-    canvasWidth: any;
-    canvasHeight: any;
-  };
-}
+import { useAccount } from "wagmi";
+import { InputBase } from "~~/components/scaffold-eth";
+import { joinGame } from "~~/utils/doodleExchange/api/apiUtils";
+import { saveGameState } from "~~/utils/doodleExchange/game";
+import { notification } from "~~/utils/scaffold-eth";
 
 const Home: NextPage = () => {
-  const drawingCanvas = useRef<CanvasDrawLines>(null);
-  const [color, setColor] = useState<string>("rgba(96,125,139,100)");
-  const [canvasDisabled, setCanvasDisabled] = useState<boolean>(false);
-  const [finalDrawing, setFinalDrawing] = useState<string>("");
-  const [loading, setLoading] = useState<boolean>(true);
-  const [gptAnswer, setGPTAnswer] = useState<string>("");
+  const { address: connectedAddress } = useAccount();
+  const [inviteCode, setInviteCode] = useState("");
+  const router = useRouter();
 
-  const { width = 1, height = 1 } = useWindowSize({ initializeWithValue: false, debounceDelay: 500 });
-  const calculatedCanvaSize = Math.round(0.8 * Math.min(width, height));
-  const colorPickerSize = Math.round(0.95 * calculatedCanvaSize).toString() + "px";
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const invite = searchParams.get("invite");
+
+  const createGame = async () => {
+    const response = await fetch("/api/host/create", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ hostAddress: connectedAddress as string }),
+    });
+
+    const responseData = await response.json();
+
+    if (responseData.error) {
+      notification.error(responseData.error);
+      return;
+    }
+
+    saveGameState(JSON.stringify(responseData));
+    router.push(`/game/${responseData.game.inviteCode}`);
+    notification.success(`New Game Started`);
+  };
+
+  const handleJoin = async (invite: string, address: string) => {
+    if ((await joinGame(invite, address)).success) {
+      router.push(`/game/${invite}`);
+      setInviteCode("");
+      notification.success(`Joined Game Successfully`);
+    }
+  };
 
   useEffect(() => {
-    if (calculatedCanvaSize !== 1) {
-      setLoading(false);
+    if (invite && connectedAddress) {
+      setInviteCode(invite);
+      handleJoin(invite, connectedAddress);
+      router.replace(pathname, { scroll: false });
     }
-  }, [calculatedCanvaSize]);
-
-  const updateColor = (value: any) => {
-    setColor(`rgba(${value.rgb.r},${value.rgb.g},${value.rgb.b},${value.rgb.a})`);
-  };
-
-  if (loading) {
-    return <span className="flex flex-col m-auto loading loading-spinner loading-sm"></span>;
-  }
-
-  const handleSubmit = async () => {
-    setCanvasDisabled(true);
-    console.log(drawingCanvas?.current?.canvas.drawing.toDataURL());
-    setFinalDrawing(drawingCanvas?.current?.canvas.drawing.toDataURL());
-    const response = await getGpt4oClassify(drawingCanvas?.current?.canvas.drawing.toDataURL());
-    if (response?.answer) {
-      setGPTAnswer(response?.answer);
-    } else {
-      console.log("error with classification fetching part");
-    }
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [invite, connectedAddress]);
 
   return (
-    <div className="flex items-center flex-col flex-grow pt-3">
-      {finalDrawing ? (
-        <>
-          <h2 className="mt-1.5 text-center">
-            {gptAnswer ? (
-              <>
-                <button
-                  className="btn btn-sm btn-primary block mb-2"
-                  onClick={() => {
-                    setFinalDrawing("");
-                    setCanvasDisabled(false);
-                    setGPTAnswer("");
-                  }}
-                >
-                  Start a new drawing
-                </button>
-                GPT sees <span className="font-bold">{gptAnswer}</span>
-              </>
-            ) : (
-              <span className="flex flex-col m-auto loading loading-spinner loading-sm"></span>
-            )}
-          </h2>
+    <>
+      <Suspense>
+        <div className="flex items-center flex-col flex-grow pt-10">
+          <button className="btn btn-primary mb-2" onClick={() => createGame()}>
+            Create a new game
+          </button>
+          <InputBase
+            name="inviteCode"
+            value={inviteCode}
+            placeholder="Invite Code"
+            onChange={value => {
+              setInviteCode(value);
+            }}
+          />
 
-          <div className="border-2 bg-white">
-            <Image
-              width={calculatedCanvaSize}
-              height={calculatedCanvaSize}
-              src={`${finalDrawing}`}
-              alt="Your drawing"
-            />
-          </div>
-        </>
-      ) : (
-        <>
-          <div className="flex flex-row gap-2 mb-2">
-            <button
-              className="btn btn-sm btn-secondary"
-              onClick={() => {
-                drawingCanvas.current?.undo();
-              }}
-            >
-              <ArrowUturnLeftIcon className="h-4 w-4" /> UNDO
-            </button>
-            <button
-              className="btn btn-sm btn-secondary"
-              onClick={() => {
-                drawingCanvas?.current?.clear();
-              }}
-            >
-              <TrashIcon className="h-4 w-4" /> Clear
-            </button>
-          </div>
-          <div className={`${canvasDisabled ? "cursor-not-allowed" : "cursor-none"}`}>
-            <CanvasDraw
-              key={"canvas"}
-              ref={drawingCanvas}
-              canvasWidth={calculatedCanvaSize}
-              canvasHeight={calculatedCanvaSize}
-              brushColor={color}
-              lazyRadius={1}
-              brushRadius={3}
-              disabled={canvasDisabled}
-              hideGrid={true}
-              immediateLoading={true}
-              loadTimeOffset={10}
-            />
-          </div>
-
-          <div className="flex flex-col mt-2">
-            <CirclePicker color={color} onChangeComplete={updateColor} circleSpacing={4} width={colorPickerSize} />
-            <div className="flex justify-center mt-2">
-              <button className="btn btn-block btn-primary" onClick={handleSubmit}>
-                Submit
-              </button>
-            </div>
-          </div>
-        </>
-      )}
-    </div>
+          <button
+            className="btn  btn-primary mt-2"
+            type="button"
+            onClick={() => handleJoin(inviteCode, connectedAddress as string)}
+          >
+            Join Game
+          </button>
+        </div>
+      </Suspense>
+    </>
   );
 };
 
