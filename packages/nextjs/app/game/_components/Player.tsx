@@ -1,12 +1,11 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import CanvasDraw from "react-canvas-draw";
 import { CirclePicker } from "react-color";
 import { useWindowSize } from "usehooks-ts";
 import { useAccount } from "wagmi";
-import { ArrowUturnLeftIcon, ForwardIcon, TrashIcon } from "@heroicons/react/24/outline";
+import { ArrowUturnLeftIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { getGpt4oClassify } from "~~/app/classify";
-import { getWord } from "~~/app/getWord";
 import { Game } from "~~/types/game/game";
 import { uploadToFirebase } from "~~/utils/uploadToFirebase";
 
@@ -19,34 +18,26 @@ interface CanvasDrawLines extends CanvasDraw {
   };
 }
 
-const Player = ({ game }: { game: Game }) => {
+const Player = ({
+  game,
+  moveToNextRound,
+  finishGame,
+}: {
+  game: Game;
+  moveToNextRound: (winner: string) => void;
+  finishGame: () => void;
+}) => {
   const { address: connectedAddress } = useAccount();
   const drawingCanvas = useRef<CanvasDrawLines>(null);
   const [color, setColor] = useState<string>("rgba(96,125,139,100)");
   const [canvasDisabled, setCanvasDisabled] = useState<boolean>(false);
   const [finalDrawing, setFinalDrawing] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
-  const [drawWord, setDrawWord] = useState<string>("");
   const [gptAnswer, setGPTAnswer] = useState<string>("");
 
   const { width = 1, height = 1 } = useWindowSize({ initializeWithValue: false, debounceDelay: 500 });
   const calculatedCanvaSize = Math.round(0.8 * Math.min(width, height));
   const colorPickerSize = Math.round(0.95 * calculatedCanvaSize).toString() + "px";
-
-  const fetchWord = useCallback(async () => {
-    const response = await getWord();
-    if (response?.success) {
-      setDrawWord(response.success);
-    } else {
-      console.log(response);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!drawWord) {
-      fetchWord();
-    }
-  }, []);
 
   useEffect(() => {
     if (calculatedCanvaSize !== 1) {
@@ -66,21 +57,26 @@ const Player = ({ game }: { game: Game }) => {
     console.log(drawingDataUrl);
     const response = await getGpt4oClassify(drawingCanvas?.current?.canvas.drawing.toDataURL());
     if (response?.answer) {
+      uploadToFirebase(game?.wordsList?.[game?.currentRound], response?.answer, connectedAddress || "", drawingDataUrl);
       setGPTAnswer(response?.answer);
-      uploadToFirebase(drawWord, response?.answer, connectedAddress || "", drawingDataUrl);
+      if (response?.answer.toLowerCase() === game?.wordsList?.[game?.currentRound].toLowerCase()) {
+        moveToNextRound(connectedAddress || "");
+      }
     } else {
       console.log("error with classification fetching part");
     }
   };
 
-  const resetGame = () => {
-    if (gptAnswer.toLowerCase() === drawWord.toLowerCase()) {
-      fetchWord();
+  const resetGame = async () => {
+    setGPTAnswer("");
+    if (game?.currentRound === game?.totalRounds) {
+      await finishGame();
     }
     setCanvasDisabled(false);
-    setGPTAnswer("");
     setFinalDrawing("");
   };
+
+  console.log(game);
 
   if (loading) {
     return <span className="flex flex-col m-auto loading loading-spinner loading-sm"></span>;
@@ -94,7 +90,11 @@ const Player = ({ game }: { game: Game }) => {
             {gptAnswer ? (
               <div className="flex flex-col items-center">
                 <button className="btn btn-sm btn-primary mb-1" onClick={resetGame}>
-                  {gptAnswer.toLowerCase() === drawWord.toLowerCase() ? "Start a new game" : "Try again"}
+                  {game?.currentRound === game?.totalRounds
+                    ? "Show Results"
+                    : gptAnswer.toLowerCase() === game?.wordsList?.[game?.currentRound].toLowerCase()
+                      ? "Next Round"
+                      : "Try again"}
                 </button>
                 <div>
                   GPT sees <span className="font-bold">{gptAnswer}</span>
@@ -117,7 +117,7 @@ const Player = ({ game }: { game: Game }) => {
         <>
           <div className="flex flex-col gap-2 mb-2">
             <div className="m-auto">
-              <span className="text-3xl">{drawWord}</span>
+              <span className="text-3xl">{game?.wordsList?.[game?.currentRound]}</span>
             </div>
             <div>
               <button
@@ -135,14 +135,6 @@ const Player = ({ game }: { game: Game }) => {
                 }}
               >
                 <TrashIcon className="h-4 w-4" /> Clear
-              </button>
-              <button
-                className="btn btn-sm btn-secondary"
-                onClick={() => {
-                  fetchWord();
-                }}
-              >
-                <ForwardIcon className="h-4 w-4" /> Skip
               </button>
             </div>
           </div>
@@ -171,7 +163,7 @@ const Player = ({ game }: { game: Game }) => {
               className="max-w-xl"
             />
             <div className="flex justify-center mt-2">
-              <button className="btn btn-block btn-primary" onClick={handleSubmit} disabled={game.status != "ongoing"}>
+              <button className="btn btn-block btn-primary" onClick={handleSubmit}>
                 Submit
               </button>
             </div>

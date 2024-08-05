@@ -3,9 +3,8 @@ import QRCode from "qrcode.react";
 import CopyToClipboard from "react-copy-to-clipboard";
 import { CheckCircleIcon, DocumentDuplicateIcon } from "@heroicons/react/24/outline";
 import { Game } from "~~/types/game/game";
-import { updateGameStatus } from "~~/utils/doodleExchange/api/apiUtils";
 
-const Host = ({ game, token }: { game: Game; token: string }) => {
+const Lobby = ({ game }: { game: Game }) => {
   const [inviteUrl, setInviteUrl] = useState("");
   const [inviteUrlCopied, setInviteUrlCopied] = useState(false);
   const [inviteCopied, setInviteCopied] = useState(false);
@@ -20,7 +19,6 @@ const Host = ({ game, token }: { game: Game; token: string }) => {
 
   return (
     <div className="p-6">
-      <h1>Host</h1>
       <div className=" bg-base-200 mt-2 rounded-md">
         <div className="flex">
           <span>Copy Invite Url</span>
@@ -74,17 +72,9 @@ const Host = ({ game, token }: { game: Game; token: string }) => {
           )}
         </div>
       </div>
-      {game?.status === "lobby" && (
-        <button
-          className="btn btn-sm btn-primary my-2"
-          onClick={() => {
-            updateGameStatus(game._id, "ongoing", token);
-          }}
-        >
-          Start Game
-        </button>
-      )}
       <h1>Lobby {game.players.length}</h1>
+      <h1 className="flex justify-center text-2xl">Waiting host to start</h1>
+
       {game.players.map(player => {
         return <h1 key={player}>{player}</h1>;
       })}
@@ -92,4 +82,4 @@ const Host = ({ game, token }: { game: Game; token: string }) => {
   );
 };
 
-export default Host;
+export default Lobby;
