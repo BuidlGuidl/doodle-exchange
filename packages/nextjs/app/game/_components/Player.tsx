@@ -174,15 +174,6 @@ const Player = ({
               >
                 Submit
               </button>
-              <button
-                className="btn"
-                onClick={() => {
-                  moveToNextRound(connectedAddress || "", true);
-                  resetGame();
-                }}
-              >
-                Move
-              </button>
             </div>
           </div>
         </>
