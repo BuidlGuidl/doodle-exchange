@@ -3,6 +3,7 @@ import { SignJWT } from "jose";
 import doodleConfig from "~~/doodle.config";
 import Game from "~~/lib/models/Game";
 import { ablyRealtime } from "~~/lib/socket";
+import { Player } from "~~/types/game/game";
 
 const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || doodleConfig.jwt_secret);
 
@@ -10,6 +11,11 @@ export const PATCH = async (request: Request) => {
   try {
     const body = await request.json();
     const { inviteCode, playerAddress } = body;
+
+    if (!inviteCode || playerAddress == null) {
+      return new NextResponse(JSON.stringify({ error: "Missing invite code or player address" }), { status: 400 });
+    }
+
     const game = await Game.findOne({ inviteCode });
 
     let token;
@@ -22,24 +28,29 @@ export const PATCH = async (request: Request) => {
       return new NextResponse(JSON.stringify({ error: "Game doesn't exist " }), { status: 403 });
     }
 
-    if (game.players.includes(playerAddress)) {
-      return new NextResponse(JSON.stringify({ message: "Joined game Successfully", token, game: game }), {
+    if (game.players.some((player: Player) => player.address === playerAddress)) {
+      const player = game.players.find((p: Player) => p.address === playerAddress);
+      return new NextResponse(JSON.stringify({ message: "Joined game successfully", token, game, player }), {
         status: 200,
       });
     }
 
-    if (playerAddress == null) {
-      return new NextResponse(JSON.stringify({ error: "Player address is null " }), { status: 403 });
-    }
-
-    game.players.push(playerAddress);
+    game.players.push({ address: playerAddress, status: "waiting" });
     const savedGame = await game.save();
 
-    const channel = ablyRealtime.channels.get(`gameUpdate`);
-    channel.publish(`gameUpdate`, savedGame);
-    return new NextResponse(JSON.stringify({ message: "Joined game Successfully", token, game: savedGame }), {
-      status: 200,
-    });
+    const player = game.players.find((p: Player) => p.address === playerAddress);
+
+    const gameChannel = ablyRealtime.channels.get(`gameUpdate`);
+    gameChannel.publish(`gameUpdate`, savedGame);
+
+    // const playerChannel = ablyRealtime.channels.get(`playerUpdate`);
+    // playerChannel.publish(`playerUpdate`, player);
+    return new NextResponse(
+      JSON.stringify({ message: "Joined game Successfully", token, game: savedGame, player: player }),
+      {
+        status: 200,
+      },
+    );
   } catch (error) {
     return new NextResponse(
       JSON.stringify({

@@ -76,7 +76,7 @@ const Lobby = ({ game }: { game: Game }) => {
       <h1 className="flex justify-center text-2xl">Waiting host to start</h1>
 
       {game.players.map(player => {
-        return <h1 key={player}>{player}</h1>;
+        return <h1 key={player.address}>{player.address}</h1>;
       })}
     </div>
   );
