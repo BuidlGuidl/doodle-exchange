@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import connectdb from "~~/lib/db";
 import Game from "~~/lib/models/Game";
 import { ablyRealtime } from "~~/lib/socket";
 
@@ -6,6 +7,9 @@ export const PATCH = async (request: Request) => {
   try {
     const body = await request.json();
     const { id, newRound } = body;
+
+    await connectdb();
+
     const game = await Game.findById(id);
 
     if (!game) {

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { SignJWT } from "jose";
 import doodleConfig from "~~/doodle.config";
+import connectdb from "~~/lib/db";
 import Game from "~~/lib/models/Game";
 import { ablyRealtime } from "~~/lib/socket";
 import { Player } from "~~/types/game/game";
@@ -11,6 +12,7 @@ export const PATCH = async (request: Request) => {
   try {
     const body = await request.json();
     const { inviteCode, playerAddress } = body;
+    await connectdb();
 
     if (!inviteCode || playerAddress == null) {
       return new NextResponse(JSON.stringify({ error: "Missing invite code or player address" }), { status: 400 });
