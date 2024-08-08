@@ -1,4 +1,6 @@
+import { playerSchema } from "./Player";
 import mongoose from "mongoose";
+import { Player } from "~~/types/game/game";
 
 const gameSchema = new mongoose.Schema(
   {
@@ -16,23 +18,18 @@ const gameSchema = new mongoose.Schema(
       required: true,
     },
     players: {
-      type: [String],
+      type: [playerSchema],
       default: [],
       validate: {
-        validator: function (value: [string]) {
-          const uniqueStrings: string[] = [];
-          value.forEach(item => {
-            if (!uniqueStrings.includes(item)) {
-              uniqueStrings.push(item);
-            }
-          });
-          return uniqueStrings.length === value.length;
+        validator: function (value: Player[]) {
+          const uniqueAddresses = value.map(player => player.address);
+          return uniqueAddresses.length === new Set(uniqueAddresses).size;
         },
         message: "The players array must contain unique addresses.",
       },
     },
     winners: {
-      type: [String],
+      type: [[String]],
       default: [],
     },
     wordsList: {
