@@ -22,7 +22,6 @@ interface CanvasDrawLines extends CanvasDraw {
 const Player = ({
   game,
   moveToNextRound,
-  finishGame,
   player,
   isUpdatingRound,
   countdown,
@@ -30,7 +29,6 @@ const Player = ({
 }: {
   game: Game;
   moveToNextRound: (winner: string, won: boolean) => void;
-  finishGame: () => void;
   player: playerType;
   isUpdatingRound: boolean;
   countdown: number;
@@ -49,6 +47,12 @@ const Player = ({
   const calculatedCanvaSize = Math.round(0.8 * Math.min(width, height));
   const colorPickerSize = `${Math.round(0.95 * calculatedCanvaSize)}px`;
 
+  const isLastRound = game.currentRound === game.totalRounds - 1;
+  const showResultsButton = !isUpdatingRound || game.currentRound === player.currentRound;
+  const countdownText = isLastRound
+    ? `Ending the game in ${countdown} Seconds`
+    : `Moving to next round in ${countdown} Seconds`;
+
   useEffect(() => {
     if (calculatedCanvaSize !== 1) {
       setLoading(false);
@@ -61,9 +65,9 @@ const Player = ({
   };
 
   const handleSubmit = async () => {
-    updatePlayerStatus(game._id, "classifying", token, connectedAddress || "");
     setCanvasDisabled(true);
     const drawingDataUrl = drawingCanvas.current?.canvas.drawing.toDataURL() || "";
+    updatePlayerStatus(game._id, "classifying", token, connectedAddress || "", drawingDataUrl);
     setFinalDrawing(drawingDataUrl);
     console.log(drawingDataUrl);
     const response = await getGpt4oClassify(drawingDataUrl);
@@ -72,7 +76,7 @@ const Player = ({
       setGPTAnswer(response.answer);
       if (response.answer.toLowerCase() === game.wordsList?.[player.currentRound]?.toLowerCase()) {
         moveToNextRound(connectedAddress || "", true);
-        resetGame();
+        setCanvasDisabled(false);
       }
     } else {
       console.log("error with classification fetching part");
@@ -83,12 +87,15 @@ const Player = ({
 
   const resetGame = async () => {
     setGPTAnswer("");
-    if (game.currentRound === game.totalRounds) {
-      await finishGame();
-    }
     setCanvasDisabled(false);
     setFinalDrawing("");
   };
+
+  useEffect(() => {
+    if (!isUpdatingRound) {
+      resetGame();
+    }
+  }, [isUpdatingRound]);
 
   if (loading) {
     return <span className="flex flex-col m-auto loading loading-spinner loading-sm"></span>;
@@ -101,16 +108,15 @@ const Player = ({
           <div className="mb-1.5 text-center">
             {gptAnswer ? (
               <div className="flex flex-col items-center">
-                <button className="btn btn-sm btn-primary mb-1" onClick={resetGame}>
-                  {game.currentRound === game.totalRounds
-                    ? "Show Results"
-                    : gptAnswer.toLowerCase() === game.wordsList?.[player.currentRound]?.toLowerCase()
-                      ? "Next Round"
-                      : "Try again"}
-                </button>
+                {showResultsButton && (
+                  <button className="btn btn-sm btn-primary mb-1" onClick={resetGame}>
+                    {game.status === "finished" ? "Show Results" : "Try again"}
+                  </button>
+                )}
                 <div>
                   GPT sees <span className="font-bold">{gptAnswer}</span>
                 </div>
+                <div className="h-6">{isUpdatingRound && countdownText}</div>
               </div>
             ) : (
               <span className="flex flex-col m-auto loading loading-spinner loading-sm"></span>
@@ -135,7 +141,7 @@ const Player = ({
               </button>
             </div>
           </div>
-          <div className="h-6">{isUpdatingRound ? `Moving to next round in ${countdown} Seconds` : ""}</div>
+          <div className="h-6">{isUpdatingRound && countdownText}</div>
           <div className={canvasDisabled ? "cursor-not-allowed" : "cursor-none"}>
             <CanvasDraw
               key="canvas"
@@ -173,6 +179,15 @@ const Player = ({
                 disabled={game.currentRound !== player.currentRound}
               >
                 Submit
+              </button>
+              <button
+                className="btn"
+                onClick={() => {
+                  moveToNextRound(connectedAddress || "", true);
+                  setCanvasDisabled(false);
+                }}
+              >
+                Move
               </button>
             </div>
           </div>
