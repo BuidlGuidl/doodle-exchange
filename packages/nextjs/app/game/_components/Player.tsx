@@ -180,15 +180,6 @@ const Player = ({
               >
                 Submit
               </button>
-              <button
-                className="btn"
-                onClick={() => {
-                  moveToNextRound(connectedAddress || "", true);
-                  setCanvasDisabled(false);
-                }}
-              >
-                Move
-              </button>
             </div>
           </div>
         </>
