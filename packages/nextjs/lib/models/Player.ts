@@ -14,12 +14,15 @@ export const playerSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
-  points: {
-    type: [Number],
-    default: [],
-  },
-  wonRound: {
-    type: [Boolean],
+  rounds: {
+    type: [
+      {
+        round: { type: Number, required: true },
+        points: { type: Number, default: 0 },
+        won: { type: Boolean, default: false },
+        drawings: { type: [String], default: [] },
+      },
+    ],
     default: [],
   },
 });

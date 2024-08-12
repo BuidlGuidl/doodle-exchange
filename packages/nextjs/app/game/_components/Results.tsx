@@ -34,7 +34,7 @@ const Results = ({ game }: { game: Game }) => {
             <div key={index} className="flex flex-col h-36 overflow-y-scroll mx-auto">
               <h1>{`Round ${index + 1} Winners`}</h1>
               <ul>
-                {winners.map(winner => (
+                {winners.map((winner, index) => (
                   <li key={winner} className="flex gap-6 justify-between">
                     <span>{winner}</span>
                     <span>{index == 0 ? "3" : "1"}</span>

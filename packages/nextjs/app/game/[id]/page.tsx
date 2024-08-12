@@ -11,7 +11,7 @@ import { useAccount } from "wagmi";
 import doodleConfig from "~~/doodle.config";
 import useGameData from "~~/hooks/doodleExchange/useGameData";
 import { Game, Player as playerType } from "~~/types/game/game";
-import { joinGame, updateGameRound, updateGameStatus, updatePlayerRound } from "~~/utils/doodleExchange/api/apiUtils";
+import { joinGame, updateGameRound, updatePlayerRound } from "~~/utils/doodleExchange/api/apiUtils";
 import { notification } from "~~/utils/scaffold-eth";
 
 const GamePage = () => {
@@ -27,7 +27,7 @@ const GamePage = () => {
   const [token, setToken] = useState("");
 
   const [isUpdatingRound, setIsUpdatingRound] = useState(false);
-  const [countdown, setCountdown] = useState(60);
+  const [countdown, setCountdown] = useState(20);
 
   useEffect(() => {
     const loadGame = async () => {
@@ -96,9 +96,15 @@ const GamePage = () => {
     const updateRoundChannel = ably.channels.get(`updateRound`);
 
     updateRoundChannel.subscribe(message => {
+      if (isUpdatingRound) return;
       if (game?._id === message.data._id) {
         setIsUpdatingRound(true);
-        notification.info(`Moving to the next round`, { duration: 3000 });
+        notification.info(
+          game?.currentRound == (game?.totalRounds as number) - 1
+            ? `Ending game in ${countdown} seconds`
+            : `Moving to the next round in ${countdown} seconds`,
+          { duration: 3000 },
+        );
 
         const interval = setInterval(() => {
           setCountdown(oldCount => (oldCount <= 1 ? 0 : oldCount - 1));
@@ -106,12 +112,12 @@ const GamePage = () => {
 
         setTimeout(() => {
           if (isHost && game) {
-            updateGameRound(game._id, game.currentRound + 1, token);
+            updateGameRound(game._id, token);
           }
           setIsUpdatingRound(false);
-          setCountdown(60);
+          setCountdown(20);
           clearInterval(interval);
-        }, 60000);
+        }, 20000);
       }
     });
 
@@ -125,11 +131,7 @@ const GamePage = () => {
   }, [game, ablyApiKey]);
 
   const moveToNextRound = async (address: string, won: boolean) => {
-    if (game) await updatePlayerRound(game._id, (player as playerType)?.currentRound + 1, token, address, won);
-  };
-
-  const finishGame = async () => {
-    if (game) await updateGameStatus(game._id, "finished", token);
+    if (game) await updatePlayerRound(game._id, token, address, won);
   };
 
   if (game?.status === "finished") {
@@ -143,7 +145,6 @@ const GamePage = () => {
       <Player
         game={game as Game}
         moveToNextRound={moveToNextRound}
-        finishGame={finishGame}
         player={player as playerType}
         isUpdatingRound={isUpdatingRound}
         countdown={countdown}
