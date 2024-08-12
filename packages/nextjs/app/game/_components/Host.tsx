@@ -1,11 +1,22 @@
 import React, { useEffect, useState } from "react";
+import Image from "next/image";
 import QRCode from "qrcode.react";
 import CopyToClipboard from "react-copy-to-clipboard";
 import { CheckCircleIcon, DocumentDuplicateIcon } from "@heroicons/react/24/outline";
 import { Game } from "~~/types/game/game";
 import { updateGameStatus } from "~~/utils/doodleExchange/api/apiUtils";
 
-const Host = ({ game, token }: { game: Game; token: string }) => {
+const Host = ({
+  game,
+  token,
+  isUpdatingRound,
+  countdown,
+}: {
+  game: Game;
+  token: string;
+  isUpdatingRound: boolean;
+  countdown: number;
+}) => {
   const [inviteUrl, setInviteUrl] = useState("");
   const [inviteUrlCopied, setInviteUrlCopied] = useState(false);
   const [inviteCopied, setInviteCopied] = useState(false);
@@ -18,27 +29,23 @@ const Host = ({ game, token }: { game: Game; token: string }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const handleCopy = (setCopied: (copied: boolean) => void) => {
+    setCopied(true);
+    setTimeout(() => {
+      setCopied(false);
+    }, 800);
+  };
+
   return (
     <div className="p-6">
       <h1>Host</h1>
-      <div className=" bg-base-200 mt-2 rounded-md">
-        <div className="flex">
+      <div className="bg-base-200 mt-2 rounded-md">
+        <div className="flex items-center">
           <span>Copy Invite Url</span>
           {inviteUrlCopied ? (
-            <CheckCircleIcon
-              className="ml-1.5 text-xl font-normal text-sky-600 h-5 w-5 cursor-pointer"
-              aria-hidden="true"
-            />
+            <CheckCircleIcon className="ml-1.5 text-xl font-normal text-sky-600 h-5 w-5" aria-hidden="true" />
           ) : (
-            <CopyToClipboard
-              text={inviteUrl?.toString() || ""}
-              onCopy={() => {
-                setInviteUrlCopied(true);
-                setTimeout(() => {
-                  setInviteUrlCopied(false);
-                }, 800);
-              }}
-            >
+            <CopyToClipboard text={inviteUrl || ""} onCopy={() => handleCopy(setInviteUrlCopied)}>
               <DocumentDuplicateIcon
                 className="ml-1.5 text-xl font-normal text-sky-600 h-5 w-5 cursor-pointer"
                 aria-hidden="true"
@@ -47,25 +54,14 @@ const Host = ({ game, token }: { game: Game; token: string }) => {
           )}
         </div>
         <div>
-          <QRCode value={inviteUrl?.toString() || ""} className="" level="H" renderAs="svg" />
+          <QRCode value={inviteUrl || ""} className="" level="H" renderAs="svg" />
         </div>
-        <div className="flex mt-2">
+        <div className="flex mt-2 items-center">
           <span>Invite: {game.inviteCode}</span>
           {inviteCopied ? (
-            <CheckCircleIcon
-              className="ml-1.5 text-xl font-normal text-sky-600 h-5 w-5 cursor-pointer"
-              aria-hidden="true"
-            />
+            <CheckCircleIcon className="ml-1.5 text-xl font-normal text-sky-600 h-5 w-5" aria-hidden="true" />
           ) : (
-            <CopyToClipboard
-              text={game.inviteCode}
-              onCopy={() => {
-                setInviteCopied(true);
-                setTimeout(() => {
-                  setInviteCopied(false);
-                }, 800);
-              }}
-            >
+            <CopyToClipboard text={game.inviteCode} onCopy={() => handleCopy(setInviteCopied)}>
               <DocumentDuplicateIcon
                 className="ml-1.5 text-xl font-normal text-sky-600 h-5 w-5 cursor-pointer"
                 aria-hidden="true"
@@ -74,18 +70,65 @@ const Host = ({ game, token }: { game: Game; token: string }) => {
           )}
         </div>
       </div>
-      <button
-        className="btn btn-sm btn-primary my-2"
-        onClick={() => {
-          updateGameStatus(game._id, "ongoing", token);
-        }}
-      >
-        Start Game
-      </button>
+      <div className="h-6">
+        {isUpdatingRound &&
+          (game.currentRound === game.totalRounds - 1
+            ? `Ending the game in ${countdown} Seconds`
+            : `Moving to next round in ${countdown} Seconds`)}
+      </div>
+      {game?.status === "lobby" && (
+        <button className="btn btn-sm btn-primary my-2" onClick={() => updateGameStatus(game._id, "ongoing", token)}>
+          Start Game
+        </button>
+      )}
       <h1>Lobby {game.players.length}</h1>
-      {game.players.map(player => {
-        return <h1 key={player}>{player}</h1>;
-      })}
+
+      {game.players.map(player => (
+        <h1 key={player.address} className="flex gap-6 justify-between w-fit items-center">
+          <span> {player.address}</span>
+          <span className="w-24"> {player.status}</span>
+          <span>Round: {player.currentRound + 1}</span>
+          {player.rounds[player.currentRound]?.drawings && (
+            <div>
+              <button
+                className="btn btn-sm"
+                onClick={() => {
+                  const modal = document.getElementById(`my_modal_${player.address}`) as HTMLDialogElement;
+                  if (modal) {
+                    modal.showModal();
+                  }
+                }}
+              >
+                Images
+              </button>
+              <dialog id={`my_modal_${player.address}`} className="modal" key={player.address}>
+                <div className="modal-box">
+                  <div className="flex flex-col gap-4">
+                    {player.rounds[player.currentRound].drawings
+                      .slice()
+                      .reverse()
+                      .map((drawing, index) => {
+                        return (
+                          <Image
+                            className="border-2"
+                            key={index}
+                            src={drawing}
+                            alt="drawing"
+                            width={400}
+                            height={400}
+                          />
+                        );
+                      })}
+                  </div>
+                </div>
+                <form method="dialog" className="modal-backdrop">
+                  <button>close</button>
+                </form>
+              </dialog>
+            </div>
+          )}
+        </h1>
+      ))}
     </div>
   );
 };

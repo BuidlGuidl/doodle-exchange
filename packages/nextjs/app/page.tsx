@@ -13,6 +13,7 @@ import { notification } from "~~/utils/scaffold-eth";
 const Home: NextPage = () => {
   const { address: connectedAddress } = useAccount();
   const [inviteCode, setInviteCode] = useState("");
+  const [isGameCreating, setIsGameCreating] = useState<boolean>(false);
   const router = useRouter();
 
   const searchParams = useSearchParams();
@@ -20,6 +21,7 @@ const Home: NextPage = () => {
   const invite = searchParams.get("invite");
 
   const createGame = async () => {
+    setIsGameCreating(true);
     const response = await fetch("/api/host/create", {
       method: "POST",
       headers: {
@@ -38,6 +40,7 @@ const Home: NextPage = () => {
     saveGameState(JSON.stringify(responseData));
     router.push(`/game/${responseData.game.inviteCode}`);
     notification.success(`New Game Started`);
+    setIsGameCreating(false);
   };
 
   const handleJoin = async (invite: string, address: string) => {
@@ -61,8 +64,8 @@ const Home: NextPage = () => {
     <>
       <Suspense>
         <div className="flex items-center flex-col flex-grow pt-10">
-          <button className="btn btn-primary mb-2" onClick={() => createGame()}>
-            Create a new game
+          <button className="btn btn-primary mb-2" onClick={() => createGame()} disabled={isGameCreating}>
+            {isGameCreating ? "Creating..." : "Create a new game"}
           </button>
           <InputBase
             name="inviteCode"

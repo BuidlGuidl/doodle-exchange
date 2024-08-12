@@ -26,3 +26,17 @@ export const updateGameState = (game: string) => {
     }
   }
 };
+
+export const updatePlayerState = (player: string) => {
+  if (typeof window != "undefined" && window != null) {
+    let gameState = window.localStorage.getItem(STORAGE_KEY);
+
+    if (gameState) {
+      const gameStateObj = JSON.parse(gameState);
+      gameStateObj.player = player;
+      gameState = JSON.stringify(gameStateObj);
+      window.localStorage.setItem(STORAGE_KEY, gameState);
+      return gameState;
+    }
+  }
+};
