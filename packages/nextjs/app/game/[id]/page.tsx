@@ -11,11 +11,10 @@ import { useAccount } from "wagmi";
 import doodleConfig from "~~/doodle.config";
 import useGameData from "~~/hooks/doodleExchange/useGameData";
 import { Game, Player as playerType } from "~~/types/game/game";
-import { joinGame, updateGameRound, updatePlayerRound } from "~~/utils/doodleExchange/api/apiUtils";
+import { fetchAblyApiKey, joinGame, updateGameRound, updatePlayerRound } from "~~/utils/doodleExchange/api/apiUtils";
 import { notification } from "~~/utils/scaffold-eth";
 
 const GamePage = () => {
-  const ablyApiKey = process.env.NEXT_PUBLIC_ABLY_API_KEY || doodleConfig.ably_api_key;
   const { id } = useParams();
   const { loadGameState, updateGameState, updatePlayerState } = useGameData();
   const { address: connectedAddress } = useAccount();
@@ -25,9 +24,18 @@ const GamePage = () => {
   const [game, setGame] = useState<Game>();
   const [player, setPlayer] = useState<playerType>();
   const [token, setToken] = useState("");
+  const [ablyApiKey, setAblyApiKey] = useState("");
 
   const [isUpdatingRound, setIsUpdatingRound] = useState(false);
   const [countdown, setCountdown] = useState(20);
+
+  useEffect(() => {
+    fetchAblyApiKey().then((key: string) => {
+      const ablyApiKey = key || doodleConfig.ably_api_key;
+      setAblyApiKey(ablyApiKey);
+      console.log("ablyApiKey", ablyApiKey);
+    });
+  }, []);
 
   useEffect(() => {
     const loadGame = async () => {
