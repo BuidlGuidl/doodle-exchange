@@ -1,14 +1,15 @@
 import { NextResponse } from "next/server";
+import Ably from "ably";
+import doodleConfig from "~~/doodle.config";
 import connectdb from "~~/lib/db";
 import Game from "~~/lib/models/Game";
-import { ablyRealtime } from "~~/lib/socket";
 import { Player } from "~~/types/game/game";
 
 export const PATCH = async (request: Request) => {
   try {
     const body = await request.json();
     const { id, address, won } = body;
-
+    const ablyRealtime = new Ably.Realtime({ key: process.env.ABLY_API_KEY || doodleConfig.ably_api_key });
     await connectdb();
     const game = await Game.findById(id);
     if (!game) {
@@ -73,7 +74,8 @@ export const PATCH = async (request: Request) => {
     const playerChannel = ablyRealtime.channels.get("playerUpdate");
     gameChannel.publish("gameUpdate", updatedGame);
     playerChannel.publish("playerUpdate", player);
-
+    gameChannel.unsubscribe();
+    playerChannel.unsubscribe();
     return new NextResponse(
       JSON.stringify({
         message: `Updated current player round to ${player.currentRound}`,

@@ -180,6 +180,12 @@ const Player = ({
               >
                 Submit
               </button>
+              <button
+                className="btn"
+                onClick={() => {
+                  moveToNextRound(connectedAddress || "", true);
+                }}
+              ></button>
             </div>
           </div>
         </>

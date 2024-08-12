@@ -33,7 +33,6 @@ const GamePage = () => {
     fetchAblyApiKey().then((key: string) => {
       const ablyApiKey = key || doodleConfig.ably_api_key;
       setAblyApiKey(ablyApiKey);
-      console.log("ablyApiKey", ablyApiKey);
     });
   }, []);
 
