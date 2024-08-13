@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
-import Ably from "ably";
-import doodleConfig from "~~/doodle.config";
 import connectdb from "~~/lib/db";
 import Game from "~~/lib/models/Game";
+import { ablyRealtime } from "~~/lib/socket";
 
 // import { ablyRealtime } from "~~/lib/socket";
 
@@ -10,7 +9,6 @@ export const PATCH = async (request: Request) => {
   try {
     const body = await request.json();
     const { id } = body;
-    const ablyRealtime = new Ably.Realtime({ key: process.env.ABLY_API_KEY || doodleConfig.ably_api_key });
     await connectdb();
     const game = await Game.findById(id);
 
@@ -58,7 +56,7 @@ export const PATCH = async (request: Request) => {
     const gameChannel = ablyRealtime.channels.get("gameUpdate");
     gameChannel.publish("gameUpdate", updatedGame);
     gameChannel.unsubscribe();
-    ablyRealtime.close();
+
     return new NextResponse(
       JSON.stringify({
         message: message,
