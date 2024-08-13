@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import Ably from "ably";
 import { SignJWT } from "jose";
 import doodleConfig from "~~/doodle.config";
 import connectdb from "~~/lib/db";
 import Game from "~~/lib/models/Game";
+import { ablyRealtime } from "~~/lib/socket";
 import { Player } from "~~/types/game/game";
 
 const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || doodleConfig.jwt_secret);
@@ -12,7 +12,6 @@ export const PATCH = async (request: Request) => {
   try {
     const body = await request.json();
     const { inviteCode, playerAddress } = body;
-    const ablyRealtime = new Ably.Realtime({ key: process.env.ABLY_API_KEY || doodleConfig.ably_api_key });
     await connectdb();
 
     if (!inviteCode || playerAddress == null) {
@@ -46,7 +45,6 @@ export const PATCH = async (request: Request) => {
     const gameChannel = ablyRealtime.channels.get(`gameUpdate`);
     gameChannel.publish(`gameUpdate`, savedGame);
     gameChannel.unsubscribe();
-    ablyRealtime.close();
     // const playerChannel = ablyRealtime.channels.get(`playerUpdate`);
     // playerChannel.publish(`playerUpdate`, player);
     return new NextResponse(
