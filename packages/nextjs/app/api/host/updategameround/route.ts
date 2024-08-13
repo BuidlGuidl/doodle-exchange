@@ -58,7 +58,7 @@ export const PATCH = async (request: Request) => {
     const gameChannel = ablyRealtime.channels.get("gameUpdate");
     gameChannel.publish("gameUpdate", updatedGame);
     gameChannel.unsubscribe();
-
+    ablyRealtime.close();
     return new NextResponse(
       JSON.stringify({
         message: message,

@@ -32,6 +32,7 @@ export const PATCH = async (request: Request) => {
     const channel = ablyRealtime.channels.get(`gameUpdate`);
     channel.publish(`gameUpdate`, updatedGame);
     channel.unsubscribe();
+    ablyRealtime.close();
     return new NextResponse(JSON.stringify({ message: `Updated game status to ${newStatus}`, game: updatedGame }), {
       status: 200,
     });
