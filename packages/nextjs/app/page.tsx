@@ -1,8 +1,7 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { usePathname, useSearchParams } from "next/navigation";
 import type { NextPage } from "next";
 import { useAccount } from "wagmi";
 import { InputBase } from "~~/components/scaffold-eth";
@@ -16,9 +15,9 @@ const Home: NextPage = () => {
   const [isGameCreating, setIsGameCreating] = useState<boolean>(false);
   const router = useRouter();
 
-  const searchParams = useSearchParams();
-  const pathname = usePathname();
-  const invite = searchParams.get("invite");
+  // const searchParams = useSearchParams();
+  // const pathname = usePathname();
+  // const invite = searchParams.get("invite");
 
   const createGame = async () => {
     setIsGameCreating(true);
@@ -51,40 +50,29 @@ const Home: NextPage = () => {
     }
   };
 
-  useEffect(() => {
-    if (invite && connectedAddress) {
-      setInviteCode(invite);
-      handleJoin(invite, connectedAddress);
-      router.replace(pathname, { scroll: false });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [invite, connectedAddress]);
-
   return (
     <>
-      <Suspense>
-        <div className="flex items-center flex-col flex-grow pt-10">
-          <button className="btn btn-primary mb-2" onClick={() => createGame()} disabled={isGameCreating}>
-            {isGameCreating ? "Creating..." : "Create a new game"}
-          </button>
-          <InputBase
-            name="inviteCode"
-            value={inviteCode}
-            placeholder="Invite Code"
-            onChange={value => {
-              setInviteCode(value);
-            }}
-          />
+      <div className="flex items-center flex-col flex-grow pt-10">
+        <button className="btn btn-primary mb-2" onClick={() => createGame()} disabled={isGameCreating}>
+          {isGameCreating ? "Creating..." : "Create a new game"}
+        </button>
+        <InputBase
+          name="inviteCode"
+          value={inviteCode}
+          placeholder="Invite Code"
+          onChange={value => {
+            setInviteCode(value);
+          }}
+        />
 
-          <button
-            className="btn  btn-primary mt-2"
-            type="button"
-            onClick={() => handleJoin(inviteCode, connectedAddress as string)}
-          >
-            Join Game
-          </button>
-        </div>
-      </Suspense>
+        <button
+          className="btn  btn-primary mt-2"
+          type="button"
+          onClick={() => handleJoin(inviteCode, connectedAddress as string)}
+        >
+          Join Game
+        </button>
+      </div>
     </>
   );
 };
