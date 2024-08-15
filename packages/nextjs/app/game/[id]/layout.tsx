@@ -11,7 +11,11 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     <>
       <AblyProvider client={client}>
         <ChannelProvider channelName="gameUpdate">
-          <main>{children}</main>
+          <ChannelProvider channelName="playerUpdate">
+            <ChannelProvider channelName="updateRound">
+              <main>{children}</main>
+            </ChannelProvider>
+          </ChannelProvider>
         </ChannelProvider>
       </AblyProvider>
     </>

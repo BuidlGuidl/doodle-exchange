@@ -46,7 +46,7 @@ export const GET = async () => {
     const games = await Game.find();
     return new NextResponse(JSON.stringify(games), { status: 200 });
   } catch (error) {
-    return new NextResponse("Error fetching game " + error, { status: 500 });
+    return new NextResponse("Error fetching games " + error, { status: 500 });
   }
 };
 
