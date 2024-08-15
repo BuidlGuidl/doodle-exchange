@@ -6,15 +6,13 @@ import Host from "../_components/Host";
 import Lobby from "../_components/Lobby";
 import Player from "../_components/Player";
 import Results from "../_components/Results";
-import Ably from "ably";
+import { useChannel } from "ably/react";
 import { useAccount } from "wagmi";
-import doodleConfig from "~~/doodle.config";
 import useGameData from "~~/hooks/doodleExchange/useGameData";
 import { Game } from "~~/types/game/game";
 import { joinGame, updateGameRound, updateGameStatus } from "~~/utils/doodleExchange/api/apiUtils";
 
 const GamePage = () => {
-  const ablyApiKey = process.env.NEXT_PUBLIC_ABLY_API_KEY || doodleConfig.ably_api_key;
   const { id } = useParams();
   const { loadGameState, updateGameState } = useGameData();
   const { address: connectedAddress } = useAccount();
@@ -23,6 +21,14 @@ const GamePage = () => {
 
   const [game, setGame] = useState<Game>();
   const [token, setToken] = useState("");
+
+  useChannel("gameUpdate", message => {
+    console.log(message);
+    if (game?._id === message.data._id) {
+      setGame(message.data);
+      updateGameState(JSON.stringify(message.data));
+    }
+  });
 
   useEffect(() => {
     const loadGame = async () => {
@@ -57,25 +63,6 @@ const GamePage = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isPlayer]);
-
-  useEffect(() => {
-    if (!ablyApiKey) return;
-    const ably = new Ably.Realtime({ key: ablyApiKey });
-    const channel = ably.channels.get(`gameUpdate`);
-
-    channel.subscribe(message => {
-      if (game?._id === message.data._id) {
-        setGame(message.data);
-        updateGameState(JSON.stringify(message.data));
-      }
-    });
-
-    return () => {
-      channel.unsubscribe(`gameUpdate`);
-      ably.close();
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [game, ablyApiKey]);
 
   const moveToNextRound = (winner: string) => {
     if (game) updateGameRound(game._id, game?.currentRound + 1, token, winner);

@@ -2969,7 +2969,7 @@ __metadata:
     "@uniswap/sdk-core": ^4.0.1
     "@uniswap/v2-sdk": ^3.0.1
     abitype: 1.0.5
-    ably: 1.2.45
+    ably: ^2.3.1
     autoprefixer: ^10.4.12
     blo: ^1.0.1
     burner-connector: ^0.0.8
@@ -4791,13 +4791,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ably@npm:1.2.45":
-  version: 1.2.45
-  resolution: "ably@npm:1.2.45"
+"ably@npm:^2.3.1":
+  version: 2.3.1
+  resolution: "ably@npm:2.3.1"
   dependencies:
     "@ably/msgpack-js": ^0.4.0
+    fastestsmallesttextencoderdecoder: ^1.0.22
     got: ^11.8.5
-    ws: ^5.1
+    ulid: ^2.3.0
+    ws: ^8.17.1
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
@@ -4806,7 +4808,7 @@ __metadata:
       optional: true
     react-dom:
       optional: true
-  checksum: 2c9d5bda2d66b3cfce02609b1dcb9dbcb9d83eee4874b04b1596d2f150e969b7e6239e248c6e818ad63d6b0f09f6b215eb95220eadc7e166f6f734203e557b34
+  checksum: b2468811c34bf1be2363ff297bb0104df2a29daa42b32dff66e292df692fadbf0c960e33ae4bee1d10bb84741fc90113f13d31bebaacce1add27a4aea0bef144
   languageName: node
   linkType: hard
 
@@ -5335,13 +5337,6 @@ __metadata:
   version: 2.0.0
   resolution: "astral-regex@npm:2.0.0"
   checksum: 876231688c66400473ba505731df37ea436e574dd524520294cc3bbc54ea40334865e01fa0d074d74d036ee874ee7e62f486ea38bc421ee8e6a871c06f011766
-  languageName: node
-  linkType: hard
-
-"async-limiter@npm:~1.0.0":
-  version: 1.0.1
-  resolution: "async-limiter@npm:1.0.1"
-  checksum: 2b849695b465d93ad44c116220dee29a5aeb63adac16c1088983c339b0de57d76e82533e8e364a93a9f997f28bbfc6a92948cefc120652bd07f3b59f8d75cf2b
   languageName: node
   linkType: hard
 
@@ -8341,6 +8336,13 @@ __metadata:
   version: 2.1.1
   resolution: "fast-safe-stringify@npm:2.1.1"
   checksum: a851cbddc451745662f8f00ddb622d6766f9bd97642dabfd9a405fb0d646d69fc0b9a1243cbf67f5f18a39f40f6fa821737651ff1bceeba06c9992ca2dc5bd3d
+  languageName: node
+  linkType: hard
+
+"fastestsmallesttextencoderdecoder@npm:^1.0.22":
+  version: 1.0.22
+  resolution: "fastestsmallesttextencoderdecoder@npm:1.0.22"
+  checksum: cc5e6c3b4c13de41a24e1311af4d0726e85d9edd75af8a13282f9e5f2751805d869455352a0bf065ab59c9c240d078b7abd98d676da9257666402e56ce9395d0
   languageName: node
   linkType: hard
 
@@ -15509,6 +15511,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"ulid@npm:^2.3.0":
+  version: 2.3.0
+  resolution: "ulid@npm:2.3.0"
+  bin:
+    ulid: ./bin/cli.js
+  checksum: d6dbf253fdc189f60fe2829d934ee5447b3dab62d05449a2e0fe89670d77087dd6eba4f844a69f9ffdb01384ec6fd97bdd9be638fc67d593569a45e8969f1e69
+  languageName: node
+  linkType: hard
+
 "unbox-primitive@npm:^1.0.2":
   version: 1.0.2
   resolution: "unbox-primitive@npm:1.0.2"
@@ -16363,15 +16374,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ws@npm:^5.1":
-  version: 5.2.4
-  resolution: "ws@npm:5.2.4"
-  dependencies:
-    async-limiter: ~1.0.0
-  checksum: a0c39704a752593ce603b0b3d28a3d3901839cd20560503b2c7257d63ee448677a4e00a2b7f69d775363a08700f041e84fe1f77b00931bb471f54380ab6dd50e
-  languageName: node
-  linkType: hard
-
 "ws@npm:^7.4.6, ws@npm:^7.5.1":
   version: 7.5.9
   resolution: "ws@npm:7.5.9"
@@ -16384,6 +16386,21 @@ __metadata:
     utf-8-validate:
       optional: true
   checksum: c3c100a181b731f40b7f2fddf004aa023f79d64f489706a28bc23ff88e87f6a64b3c6651fbec3a84a53960b75159574d7a7385709847a62ddb7ad6af76f49138
+  languageName: node
+  linkType: hard
+
+"ws@npm:^8.17.1":
+  version: 8.18.0
+  resolution: "ws@npm:8.18.0"
+  peerDependencies:
+    bufferutil: ^4.0.1
+    utf-8-validate: ">=5.0.2"
+  peerDependenciesMeta:
+    bufferutil:
+      optional: true
+    utf-8-validate:
+      optional: true
+  checksum: 91d4d35bc99ff6df483bdf029b9ea4bfd7af1f16fc91231a96777a63d263e1eabf486e13a2353970efc534f9faa43bdbf9ee76525af22f4752cbc5ebda333975
   languageName: node
   linkType: hard
 

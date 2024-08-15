@@ -15,10 +15,6 @@ const Home: NextPage = () => {
   const [isGameCreating, setIsGameCreating] = useState<boolean>(false);
   const router = useRouter();
 
-  // const searchParams = useSearchParams();
-  // const pathname = usePathname();
-  // const invite = searchParams.get("invite");
-
   const createGame = async () => {
     setIsGameCreating(true);
     const response = await fetch("/api/host/create", {
