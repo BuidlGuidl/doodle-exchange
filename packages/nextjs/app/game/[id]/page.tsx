@@ -110,6 +110,11 @@ const GamePage = () => {
   const finishGame = async () => {
     if (game) await updateGameStatus(game._id, "finished", token);
   };
+
+  if (game?.currentRound === game?.totalRounds) {
+    console.log(game);
+    finishGame();
+  }
   if (game?.status === "finished") {
     return <Results game={game as Game} />;
   } else if (isHost && game) {
