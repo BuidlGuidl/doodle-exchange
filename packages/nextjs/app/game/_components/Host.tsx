@@ -69,7 +69,12 @@ const Host = ({
           )}
         </div>
       </div>
-      <div className="h-6">{isUpdatingRound ? `Moving to next round in ${countdown} Seconds` : ""}</div>
+      <div className="h-6">
+        {isUpdatingRound &&
+          (game.currentRound === game.totalRounds - 1
+            ? `Ending the game in ${countdown} Seconds`
+            : `Moving to next round in ${countdown} Seconds`)}
+      </div>
       {game?.status === "lobby" && (
         <button className="btn btn-sm btn-primary my-2" onClick={() => updateGameStatus(game._id, "ongoing", token)}>
           Start Game
@@ -77,7 +82,7 @@ const Host = ({
       )}
       <h1>Lobby {game.players.length}</h1>
       {game.players.map(player => (
-        <h1 key={player.address} className="flex gap-6 justify-between w-fit">
+        <h1 key={player.address} className="flex gap-6 justify-between w-fit items-center">
           <span> {player.address}</span>
           <span className="w-24"> {player.status}</span>
           <span>Round: {player.currentRound + 1}</span>

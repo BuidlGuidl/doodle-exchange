@@ -10,7 +10,7 @@ import { useChannel } from "ably/react";
 import { useAccount } from "wagmi";
 import useGameData from "~~/hooks/doodleExchange/useGameData";
 import { Game, Player as playerType } from "~~/types/game/game";
-import { joinGame, updateGameRound, updateGameStatus, updatePlayerRound } from "~~/utils/doodleExchange/api/apiUtils";
+import { joinGame, updateGameRound, updatePlayerRound } from "~~/utils/doodleExchange/api/apiUtils";
 import { notification } from "~~/utils/scaffold-eth";
 
 const GamePage = () => {
@@ -45,9 +45,15 @@ const GamePage = () => {
 
   useChannel("updateRound", message => {
     console.log(message);
+    if (isUpdatingRound) return;
     if (game?._id === message.data._id) {
       setIsUpdatingRound(true);
-      notification.info(`Moving to the next round`, { duration: 3000 });
+      notification.info(
+        game?.currentRound == (game?.totalRounds as number) - 1
+          ? `Ending game in ${countdown} seconds`
+          : `Moving to the next round in ${countdown} seconds`,
+        { duration: 3000 },
+      );
 
       const interval = setInterval(() => {
         setCountdown(oldCount => (oldCount <= 1 ? 0 : oldCount - 1));
@@ -55,7 +61,7 @@ const GamePage = () => {
 
       setTimeout(() => {
         if (isHost && game) {
-          updateGameRound(game._id, game.currentRound + 1, token);
+          updateGameRound(game._id, token);
         }
         setIsUpdatingRound(false);
         setCountdown(20);
@@ -104,17 +110,9 @@ const GamePage = () => {
   }, [isPlayer]);
 
   const moveToNextRound = async (address: string, won: boolean) => {
-    if (game) await updatePlayerRound(game._id, (player as playerType)?.currentRound + 1, token, address, won);
+    if (game) await updatePlayerRound(game._id, token, address, won);
   };
 
-  const finishGame = async () => {
-    if (game) await updateGameStatus(game._id, "finished", token);
-  };
-
-  if (game?.currentRound === game?.totalRounds) {
-    console.log(game);
-    finishGame();
-  }
   if (game?.status === "finished") {
     return <Results game={game as Game} />;
   } else if (isHost && game) {
@@ -126,7 +124,6 @@ const GamePage = () => {
       <Player
         game={game as Game}
         moveToNextRound={moveToNextRound}
-        finishGame={finishGame}
         player={player as playerType}
         isUpdatingRound={isUpdatingRound}
         countdown={countdown}

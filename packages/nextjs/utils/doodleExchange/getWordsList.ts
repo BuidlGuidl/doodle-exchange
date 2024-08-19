@@ -11,7 +11,7 @@ export async function getWordsList(numberOfWords: number) {
     if (numberOfWords > WORDS.length) {
       return { error: "Requested number of words exceeds available words" };
     }
-    // return ["Star", "Tree"];
+    return ["Star", "Tree"];
 
     const wordsSet = new Set();
     while (wordsSet.size < numberOfWords) {

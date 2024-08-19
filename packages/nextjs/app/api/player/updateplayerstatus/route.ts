@@ -7,39 +7,59 @@ import { Player } from "~~/types/game/game";
 export const PATCH = async (request: Request) => {
   try {
     const body = await request.json();
-    const { id, newStatus, address } = body;
+    const { id, newStatus, address, drawing } = body;
 
     await connectdb();
 
     const game = await Game.findById(id);
-    const player = game.players.find((p: Player) => p.address === address);
-
     if (!game) {
-      return new NextResponse(JSON.stringify({ error: "Game not found " }), { status: 403 });
+      return new NextResponse(JSON.stringify({ error: "Game not found" }), { status: 403 });
     }
 
-    if (game.status == "finished") {
-      return new NextResponse(JSON.stringify({ error: "Game has finished " }), { status: 403 });
+    const player = game.players.find((p: Player) => p.address === address);
+
+    if (!player) {
+      return new NextResponse(JSON.stringify({ error: "Player not found" }), { status: 403 });
+    }
+
+    if (game.status === "finished") {
+      return new NextResponse(JSON.stringify({ error: "Game has finished" }), { status: 403 });
     }
 
     if (player.status === newStatus) {
       return new NextResponse(JSON.stringify({ error: `Player already ${newStatus}` }), { status: 403 });
     }
 
-    if (!player) {
-      return new NextResponse(JSON.stringify({ error: "Player not found " }), { status: 403 });
+    let roundEntry = player.rounds.find((r: any) => r.round === player.currentRound);
+    if (!roundEntry) {
+      roundEntry = {
+        round: player.currentRound,
+        points: 0,
+        won: false,
+        drawings: [],
+      };
+      player.rounds.push(roundEntry);
+    }
+
+    if (newStatus === "classifying") {
+      player.rounds[player.currentRound].drawings.push(drawing);
     }
 
     player.status = newStatus;
 
     const updatedGame = await game.save();
 
-    const gameChannel = ablyRealtime.channels.get(`gameUpdate`);
-    const playerChannel = ablyRealtime.channels.get(`playerUpdate`);
-    gameChannel.publish(`gameUpdate`, updatedGame);
-    playerChannel.publish(`playerUpdate`, player);
+    const gameChannel = ablyRealtime.channels.get("gameUpdate");
+    const playerChannel = ablyRealtime.channels.get("playerUpdate");
+    gameChannel.publish("gameUpdate", updatedGame);
+    playerChannel.publish("playerUpdate", player);
+
     return new NextResponse(
-      JSON.stringify({ message: `Updated player status to ${newStatus}`, game: updatedGame, player: player }),
+      JSON.stringify({
+        message: `Updated player status to ${newStatus}`,
+        game: updatedGame,
+        player: player,
+      }),
       {
         status: 200,
       },
