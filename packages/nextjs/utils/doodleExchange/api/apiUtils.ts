@@ -1,6 +1,18 @@
 import { saveGameState } from "../game";
 import { notification } from "~~/utils/scaffold-eth";
 
+export const fetchAblyApiKey = async () => {
+  const response = await fetch("/api/ably", {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  const ablyApiKey = await response.json();
+  return ablyApiKey;
+};
+
 export const joinGame = async (invite: string, address: string) => {
   const response = await fetch("/api/player/join", {
     method: "PATCH",

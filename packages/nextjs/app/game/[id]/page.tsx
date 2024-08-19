@@ -17,9 +17,9 @@ const GamePage = () => {
   const { id } = useParams();
   const { loadGameState, updateGameState, updatePlayerState } = useGameData();
   const { address: connectedAddress } = useAccount();
+
   const [isHost, setIsHost] = useState(false);
   const [isPlayer, setIsPlayer] = useState(false);
-
   const [game, setGame] = useState<Game>();
   const [player, setPlayer] = useState<playerType>();
   const [token, setToken] = useState("");
@@ -83,6 +83,7 @@ const GamePage = () => {
         }
         setGame(gameState);
         setToken(token);
+        // if (game.player) setPlayer(game.player);
       } else {
         if (connectedAddress) {
           await joinGame(id as string, connectedAddress);

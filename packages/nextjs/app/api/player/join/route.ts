@@ -38,14 +38,12 @@ export const PATCH = async (request: Request) => {
     }
 
     game.players.push({ address: playerAddress, status: "waiting" });
-
     const savedGame = await game.save();
 
     const player = game.players.find((p: Player) => p.address === playerAddress);
 
     const gameChannel = ablyRealtime.channels.get(`gameUpdate`);
     gameChannel.publish(`gameUpdate`, savedGame);
-
     // const playerChannel = ablyRealtime.channels.get(`playerUpdate`);
     // playerChannel.publish(`playerUpdate`, player);
     return new NextResponse(

@@ -7,7 +7,6 @@ export const PATCH = async (request: Request) => {
   try {
     const body = await request.json();
     const { id, newStatus } = body;
-
     await connectdb();
 
     const game = await Game.findById(id);
@@ -29,6 +28,7 @@ export const PATCH = async (request: Request) => {
 
     const channel = ablyRealtime.channels.get(`gameUpdate`);
     channel.publish(`gameUpdate`, updatedGame);
+    channel.unsubscribe();
     return new NextResponse(JSON.stringify({ message: `Updated game status to ${newStatus}`, game: updatedGame }), {
       status: 200,
     });

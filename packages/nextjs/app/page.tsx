@@ -4,10 +4,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { NextPage } from "next";
 import { useAccount } from "wagmi";
-import { InputBase } from "~~/components/scaffold-eth";
-import { joinGame } from "~~/utils/doodleExchange/api/apiUtils";
-import { saveGameState } from "~~/utils/doodleExchange/game";
-import { notification } from "~~/utils/scaffold-eth";
 
 const Home: NextPage = () => {
   const { address: connectedAddress } = useAccount();

@@ -8,7 +8,6 @@ export const PATCH = async (request: Request) => {
   try {
     const body = await request.json();
     const { id, newStatus, address, drawing } = body;
-
     await connectdb();
 
     const game = await Game.findById(id);

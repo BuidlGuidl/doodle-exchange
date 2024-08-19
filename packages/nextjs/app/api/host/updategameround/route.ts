@@ -3,11 +3,12 @@ import connectdb from "~~/lib/db";
 import Game from "~~/lib/models/Game";
 import { ablyRealtime } from "~~/lib/socket";
 
+// import { ablyRealtime } from "~~/lib/socket";
+
 export const PATCH = async (request: Request) => {
   try {
     const body = await request.json();
     const { id } = body;
-
     await connectdb();
     const game = await Game.findById(id);
 
@@ -43,7 +44,7 @@ export const PATCH = async (request: Request) => {
       }
     }
 
-    let message = `Moving to round ${newRound}`;
+    let message = `Moving to round ${newRound + 1}`;
     if (newRound === game.totalRounds) {
       game.status = "finished";
       message = "Ended game successfully";

@@ -53,15 +53,15 @@ export const GET = async () => {
 export const POST = async (request: Request) => {
   try {
     const body = await request.json();
-    const { hostAddress } = body;
+    const { hostAddress, totalRounds } = body;
 
     await connectdb();
     const newGame = new Game({
       hostAddress,
       status: "lobby",
       inviteCode: await generateUniqueInvite(8),
-      wordsList: await getWordsList(2),
-      totalRounds: 2,
+      wordsList: await getWordsList(totalRounds),
+      totalRounds: totalRounds,
       currentRound: 0,
       winners: [],
     });

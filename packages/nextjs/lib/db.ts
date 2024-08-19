@@ -22,6 +22,9 @@ const connectdb = async () => {
     await mongoose.connect(MONGODB_URI, {
       dbName: "doodleExchange",
       bufferCommands: false,
+      // connectTimeoutMS: 10000,
+      // socketTimeoutMS: 45000,
+      // serverSelectionTimeoutMS: 10000,
     });
     console.log("Connected");
   } catch (error) {
