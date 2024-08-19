@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import DrawingsList from "./DrawingsList";
 import QRCode from "qrcode.react";
 import CopyToClipboard from "react-copy-to-clipboard";
 import { CheckCircleIcon, DocumentDuplicateIcon } from "@heroicons/react/24/outline";
@@ -88,6 +89,7 @@ const Host = ({
           <span>Round: {player.currentRound + 1}</span>
         </h1>
       ))}
+      {<DrawingsList game={game} />}
     </div>
   );
 };
