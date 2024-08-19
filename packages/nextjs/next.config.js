@@ -14,6 +14,7 @@ const nextConfig = {
     config.externals.push("pino-pretty", "lokijs", "encoding");
     return config;
   },
+  images: { domains: ["firebasestorage.googleapis.com"] },
 };
 
 module.exports = nextConfig;

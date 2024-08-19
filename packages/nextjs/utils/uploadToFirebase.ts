@@ -2,7 +2,7 @@
 
 import { storage } from "../app/firebaseConfig";
 import { getCurrentUserToken } from "./firebaseAuth";
-import { ref, uploadString } from "firebase/storage";
+import { getDownloadURL, ref, uploadString } from "firebase/storage";
 
 export const getFormattedDateTime = () => {
   const now = new Date();
@@ -30,10 +30,16 @@ export async function uploadToFirebase(
       storage,
       `${drawWord.toLowerCase()}/${guessWord.toLowerCase()}/${connectedAddress}_${getFormattedDateTime()}.png`,
     );
-    uploadString(storageRef, drawingDataUrl, "data_url").then(() => {
+    await uploadString(storageRef, drawingDataUrl, "data_url").then(() => {
       console.log("Uploaded a data_url string!");
     });
+
+    const downloadUrl = await getDownloadURL(storageRef);
+    console.log("Image URL:", downloadUrl);
+
+    return downloadUrl; // Return the download URL
   } catch (error) {
     console.error("Upload failed", error);
+    return "";
   }
 }

@@ -67,12 +67,18 @@ const Player = ({
   const handleSubmit = async () => {
     setCanvasDisabled(true);
     const drawingDataUrl = drawingCanvas.current?.canvas.drawing.toDataURL() || "";
-    updatePlayerStatus(game._id, "classifying", token, connectedAddress || "", drawingDataUrl);
+    updatePlayerStatus(game._id, "classifying", token, connectedAddress || "");
     setFinalDrawing(drawingDataUrl);
     console.log(drawingDataUrl);
     const response = await getGpt4oClassify(drawingDataUrl);
+    let imageFbLink = "";
     if (response?.answer) {
-      uploadToFirebase(game.wordsList?.[player.currentRound], response.answer, connectedAddress || "", drawingDataUrl);
+      imageFbLink = await uploadToFirebase(
+        game.wordsList?.[player.currentRound],
+        response.answer,
+        connectedAddress || "",
+        drawingDataUrl,
+      );
       setGPTAnswer(response.answer);
       if (response.answer.toLowerCase() === game.wordsList?.[player.currentRound]?.toLowerCase()) {
         moveToNextRound(connectedAddress || "", true);
@@ -81,7 +87,8 @@ const Player = ({
     } else {
       console.log("error with classification fetching part");
     }
-    updatePlayerStatus(game._id, "waiting", token, connectedAddress || "");
+    console.log(imageFbLink);
+    updatePlayerStatus(game._id, "waiting", token, connectedAddress || "", imageFbLink);
     setDrawingStarted(false);
   };
 

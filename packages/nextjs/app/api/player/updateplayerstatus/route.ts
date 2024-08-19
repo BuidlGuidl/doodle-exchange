@@ -40,7 +40,7 @@ export const PATCH = async (request: Request) => {
       player.rounds.push(roundEntry);
     }
 
-    if (newStatus === "classifying") {
+    if (drawing) {
       player.rounds[player.currentRound].drawings.push(drawing);
     }
 
