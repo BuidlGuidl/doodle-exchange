@@ -1,73 +1,56 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import GameCreationForm from "./_components/GameCreateForm";
+import GameJoinForm from "./_components/GameJoinForm";
 import type { NextPage } from "next";
 import { useAccount } from "wagmi";
-import { InputBase } from "~~/components/scaffold-eth";
-import { joinGame } from "~~/utils/doodleExchange/api/apiUtils";
-import { saveGameState } from "~~/utils/doodleExchange/game";
-import { notification } from "~~/utils/scaffold-eth";
 
 const Home: NextPage = () => {
   const { address: connectedAddress } = useAccount();
   const [inviteCode, setInviteCode] = useState("");
-  const [isGameCreating, setIsGameCreating] = useState<boolean>(false);
-  const router = useRouter();
-
-  const createGame = async () => {
-    setIsGameCreating(true);
-    const response = await fetch("/api/host/create", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ hostAddress: connectedAddress as string, totalRounds: 2 }),
-    });
-
-    const responseData = await response.json();
-
-    if (responseData.error) {
-      notification.error(responseData.error);
-      return;
-    }
-
-    saveGameState(JSON.stringify(responseData));
-    router.push(`/game/${responseData.game.inviteCode}`);
-    notification.success(`New Game Started`);
-    setIsGameCreating(false);
-  };
-
-  const handleJoin = async (invite: string, address: string) => {
-    if ((await joinGame(invite, address)).success) {
-      router.push(`/game/${invite}`);
-      setInviteCode("");
-      notification.success(`Joined Game Successfully`);
-    }
-  };
+  const [gameState, setGameState] = useState<"createGame" | "joinGame">("joinGame");
 
   return (
     <>
-      <div className="flex items-center flex-col flex-grow pt-10">
-        <button className="btn btn-primary mb-2" onClick={() => createGame()} disabled={isGameCreating}>
-          {isGameCreating ? "Creating..." : "Create a new game"}
-        </button>
-        <InputBase
-          name="inviteCode"
-          value={inviteCode}
-          placeholder="Invite Code"
-          onChange={value => {
-            setInviteCode(value);
-          }}
-        />
+      <div className="mx-auto mt-5 p-6 flex flex-col">
+        <div className="flex justify-center mt-10">
+          <ul className="menu menu-horizontal justify-center p-2 bg-base-300 rounded-full mb-8 w-fit mx-auto">
+            <li onClick={() => setGameState("joinGame")}>
+              <a
+                className={
+                  gameState == "joinGame"
+                    ? "bg-accent px-3 rounded-full py-1 cursor-pointer "
+                    : "px-3 rounded-full py-1 cursor-pointer hover:bg-base-100"
+                }
+              >
+                Join Game
+              </a>
+            </li>
+            <li onClick={() => setGameState("createGame")}>
+              <a
+                className={
+                  gameState == "createGame"
+                    ? "bg-accent px-3 rounded-full py-1 cursor-pointer  transition ease-in-out delay-150"
+                    : "px-3 rounded-full py-1 cursor-pointer hover:bg-base-100"
+                }
+              >
+                Start Game
+              </a>
+            </li>
+          </ul>
+        </div>
 
-        <button
-          className="btn  btn-primary mt-2"
-          type="button"
-          onClick={() => handleJoin(inviteCode, connectedAddress as string)}
-        >
-          Join Game
-        </button>
+        <div className=" w-full mx-auto flex ">
+          {gameState == "createGame" && <GameCreationForm connectedAddress={connectedAddress as string} />}
+          {gameState == "joinGame" && (
+            <GameJoinForm
+              inviteCode={inviteCode}
+              setInviteCode={setInviteCode}
+              connectedAddress={connectedAddress as string}
+            />
+          )}
+        </div>
       </div>
     </>
   );
