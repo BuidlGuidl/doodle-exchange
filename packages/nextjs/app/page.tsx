@@ -4,6 +4,10 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { NextPage } from "next";
 import { useAccount } from "wagmi";
+import { InputBase } from "~~/components/scaffold-eth";
+import { joinGame } from "~~/utils/doodleExchange/api/apiUtils";
+import { saveGameState } from "~~/utils/doodleExchange/game";
+import { notification } from "~~/utils/scaffold-eth";
 
 const Home: NextPage = () => {
   const { address: connectedAddress } = useAccount();
@@ -18,7 +22,7 @@ const Home: NextPage = () => {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ hostAddress: connectedAddress as string }),
+      body: JSON.stringify({ hostAddress: connectedAddress as string, totalRounds: 2 }),
     });
 
     const responseData = await response.json();
