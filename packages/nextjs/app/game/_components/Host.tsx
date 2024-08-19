@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import Image from "next/image";
 import QRCode from "qrcode.react";
 import CopyToClipboard from "react-copy-to-clipboard";
 import { CheckCircleIcon, DocumentDuplicateIcon } from "@heroicons/react/24/outline";
@@ -82,51 +81,11 @@ const Host = ({
         </button>
       )}
       <h1>Lobby {game.players.length}</h1>
-
       {game.players.map(player => (
         <h1 key={player.address} className="flex gap-6 justify-between w-fit items-center">
           <span> {player.address}</span>
           <span className="w-24"> {player.status}</span>
           <span>Round: {player.currentRound + 1}</span>
-          {player.rounds[player.currentRound]?.drawings && (
-            <div>
-              <button
-                className="btn btn-sm"
-                onClick={() => {
-                  const modal = document.getElementById(`my_modal_${player.address}`) as HTMLDialogElement;
-                  if (modal) {
-                    modal.showModal();
-                  }
-                }}
-              >
-                Images
-              </button>
-              <dialog id={`my_modal_${player.address}`} className="modal" key={player.address}>
-                <div className="modal-box">
-                  <div className="flex flex-col gap-4">
-                    {player.rounds[player.currentRound].drawings
-                      .slice()
-                      .reverse()
-                      .map((drawing, index) => {
-                        return (
-                          <Image
-                            className="border-2"
-                            key={index}
-                            src={drawing}
-                            alt="drawing"
-                            width={400}
-                            height={400}
-                          />
-                        );
-                      })}
-                  </div>
-                </div>
-                <form method="dialog" className="modal-backdrop">
-                  <button>close</button>
-                </form>
-              </dialog>
-            </div>
-          )}
         </h1>
       ))}
     </div>
