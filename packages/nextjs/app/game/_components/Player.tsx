@@ -78,6 +78,7 @@ const Player = ({
   const [canvasDisabled, setCanvasDisabled] = useState<boolean>(false);
   const [finalDrawing, setFinalDrawing] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
+  const [showTryAgain, setShowTryAgain] = useState<boolean>(false);
   const [gptAnswer, setGPTAnswer] = useState<string>("");
   const [drawingStarted, setDrawingStarted] = useState(false);
 
@@ -86,7 +87,6 @@ const Player = ({
   const colorPickerSize = `${Math.round(0.95 * calculatedCanvaSize)}px`;
 
   const isLastRound = game.currentRound === game.totalRounds - 1;
-  const showResultsButton = !isUpdatingRound || game.currentRound === player.currentRound;
   const countdownText = isLastRound
     ? `Ending the game in ${countdown} Seconds`
     : `Moving to next round in ${countdown} Seconds`;
@@ -122,12 +122,14 @@ const Player = ({
         makeConfetti();
         moveToNextRound(connectedAddress || "", true);
         setCanvasDisabled(false);
+        updatePlayerStatus(game._id, "waiting", token, connectedAddress || "");
+      } else {
+        updatePlayerStatus(game._id, "waiting", token, connectedAddress || "", imageFbLink);
+        setShowTryAgain(true);
       }
     } else {
       console.log("error with classification fetching part");
     }
-    console.log(imageFbLink);
-    updatePlayerStatus(game._id, "waiting", token, connectedAddress || "", imageFbLink);
     setDrawingStarted(false);
   };
 
@@ -135,6 +137,7 @@ const Player = ({
     setGPTAnswer("");
     setCanvasDisabled(false);
     setFinalDrawing("");
+    setShowTryAgain(false);
   };
 
   useEffect(() => {
@@ -147,8 +150,6 @@ const Player = ({
     return <span className="flex flex-col m-auto loading loading-spinner loading-sm"></span>;
   }
 
-  console.log(countdownText);
-
   return (
     <div className="flex items-center flex-col flex-grow pt-3">
       {finalDrawing ? (
@@ -156,9 +157,9 @@ const Player = ({
           <div className="mb-1.5 text-center">
             {gptAnswer ? (
               <div className="flex flex-col items-center">
-                {showResultsButton && (
+                {showTryAgain && (
                   <button className="btn btn-sm btn-primary mb-1" onClick={resetGame}>
-                    {game.status === "finished" ? "Show Results" : "Try again"}
+                    Try again
                   </button>
                 )}
                 <div>
