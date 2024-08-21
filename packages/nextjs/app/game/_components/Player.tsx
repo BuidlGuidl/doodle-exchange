@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import confetti from "canvas-confetti";
 import CanvasDraw from "react-canvas-draw";
 import { CirclePicker } from "react-color";
 import { useWindowSize } from "usehooks-ts";
@@ -18,6 +19,43 @@ interface CanvasDrawLines extends CanvasDraw {
     canvasHeight: any;
   };
 }
+
+const fire = (particleRatio: number, opts: any) => {
+  const count = 200;
+  const defaults = {
+    origin: { y: 0.7 },
+  };
+  confetti({
+    ...defaults,
+    ...opts,
+    particleCount: Math.floor(count * particleRatio),
+  });
+};
+
+const makeConfetti = () => {
+  fire(0.25, {
+    spread: 26,
+    startVelocity: 55,
+  });
+  fire(0.2, {
+    spread: 60,
+  });
+  fire(0.35, {
+    spread: 100,
+    decay: 0.91,
+    scalar: 0.8,
+  });
+  fire(0.1, {
+    spread: 120,
+    startVelocity: 25,
+    decay: 0.92,
+    scalar: 1.2,
+  });
+  fire(0.1, {
+    spread: 120,
+    startVelocity: 45,
+  });
+};
 
 const Player = ({
   game,
@@ -40,6 +78,7 @@ const Player = ({
   const [canvasDisabled, setCanvasDisabled] = useState<boolean>(false);
   const [finalDrawing, setFinalDrawing] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
+  const [showTryAgain, setShowTryAgain] = useState<boolean>(false);
   const [gptAnswer, setGPTAnswer] = useState<string>("");
   const [drawingStarted, setDrawingStarted] = useState(false);
 
@@ -48,7 +87,6 @@ const Player = ({
   const colorPickerSize = `${Math.round(0.95 * calculatedCanvaSize)}px`;
 
   const isLastRound = game.currentRound === game.totalRounds - 1;
-  const showResultsButton = !isUpdatingRound || game.currentRound === player.currentRound;
   const countdownText = isLastRound
     ? `Ending the game in ${countdown} Seconds`
     : `Moving to next round in ${countdown} Seconds`;
@@ -81,14 +119,18 @@ const Player = ({
       );
       setGPTAnswer(response.answer);
       if (response.answer.toLowerCase() === game.wordsList?.[player.currentRound]?.toLowerCase()) {
+        makeConfetti();
         moveToNextRound(connectedAddress || "", true);
         setCanvasDisabled(false);
+        updatePlayerStatus(game._id, "waiting", token, connectedAddress || "");
+      } else {
+        updatePlayerStatus(game._id, "waiting", token, connectedAddress || "", imageFbLink);
+        setShowTryAgain(true);
       }
     } else {
       console.log("error with classification fetching part");
     }
-    console.log(imageFbLink);
-    updatePlayerStatus(game._id, "waiting", token, connectedAddress || "", imageFbLink);
+    setCanvasDisabled(true);
     setDrawingStarted(false);
   };
 
@@ -96,6 +138,7 @@ const Player = ({
     setGPTAnswer("");
     setCanvasDisabled(false);
     setFinalDrawing("");
+    setShowTryAgain(false);
   };
 
   useEffect(() => {
@@ -115,15 +158,15 @@ const Player = ({
           <div className="mb-1.5 text-center">
             {gptAnswer ? (
               <div className="flex flex-col items-center">
-                {showResultsButton && (
+                {showTryAgain && (
                   <button className="btn btn-sm btn-primary mb-1" onClick={resetGame}>
-                    {game.status === "finished" ? "Show Results" : "Try again"}
+                    Try again
                   </button>
                 )}
                 <div>
                   GPT sees <span className="font-bold">{gptAnswer}</span>
                 </div>
-                <div className="h-6">{isUpdatingRound && countdownText}</div>
+                <div className={`h-6 ${!isUpdatingRound && "hidden"}`}>{countdownText}</div>
               </div>
             ) : (
               <span className="flex flex-col m-auto loading loading-spinner loading-sm"></span>
@@ -148,7 +191,7 @@ const Player = ({
               </button>
             </div>
           </div>
-          <div className="h-6">{isUpdatingRound && countdownText}</div>
+          <div className={`h-6 ${!isUpdatingRound && "hidden"}`}>{countdownText}</div>
           <div className={canvasDisabled ? "cursor-not-allowed" : "cursor-none"}>
             <CanvasDraw
               key="canvas"

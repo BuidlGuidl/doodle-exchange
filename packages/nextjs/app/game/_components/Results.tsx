@@ -1,5 +1,6 @@
 import React from "react";
 import { useRouter } from "next/navigation";
+import DrawingsList from "./DrawingsList";
 import { Game } from "~~/types/game/game";
 
 const Results = ({ game }: { game: Game }) => {
@@ -44,6 +45,7 @@ const Results = ({ game }: { game: Game }) => {
             </div>
           );
         })}
+        <DrawingsList game={game} />
       </div>
     </div>
   );
