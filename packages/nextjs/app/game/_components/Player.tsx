@@ -130,6 +130,7 @@ const Player = ({
     } else {
       console.log("error with classification fetching part");
     }
+    setCanvasDisabled(true);
     setDrawingStarted(false);
   };
 
