@@ -22,7 +22,7 @@ const DrawingsList = ({ game }: { game: Game }) => {
     <>
       {drawingsList.length > 0 && (
         <div>
-          <h1>Drawings</h1>
+          <h1>Incorrecly Classified Drawings</h1>
           <div className="flex flex-wrap gap-2">
             {drawingsList.reverse().map((drawing, index) => (
               <div key={index} className="border border-neutral-400">
