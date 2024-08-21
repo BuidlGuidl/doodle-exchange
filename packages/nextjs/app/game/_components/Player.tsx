@@ -147,6 +147,8 @@ const Player = ({
     return <span className="flex flex-col m-auto loading loading-spinner loading-sm"></span>;
   }
 
+  console.log(countdownText);
+
   return (
     <div className="flex items-center flex-col flex-grow pt-3">
       {finalDrawing ? (
@@ -162,7 +164,7 @@ const Player = ({
                 <div>
                   GPT sees <span className="font-bold">{gptAnswer}</span>
                 </div>
-                <div className="h-6">{isUpdatingRound && countdownText}</div>
+                <div className={`h-6 ${!isUpdatingRound && "hidden"}`}>{countdownText}</div>
               </div>
             ) : (
               <span className="flex flex-col m-auto loading loading-spinner loading-sm"></span>
@@ -187,7 +189,7 @@ const Player = ({
               </button>
             </div>
           </div>
-          <div className="h-6">{isUpdatingRound && countdownText}</div>
+          <div className={`h-6 ${!isUpdatingRound && "hidden"}`}>{countdownText}</div>
           <div className={canvasDisabled ? "cursor-not-allowed" : "cursor-none"}>
             <CanvasDraw
               key="canvas"
