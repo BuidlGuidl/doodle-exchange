@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import confetti from "canvas-confetti";
 import CanvasDraw from "react-canvas-draw";
 import { CirclePicker } from "react-color";
 import { useWindowSize } from "usehooks-ts";
@@ -18,6 +19,43 @@ interface CanvasDrawLines extends CanvasDraw {
     canvasHeight: any;
   };
 }
+
+const fire = (particleRatio: number, opts: any) => {
+  const count = 200;
+  const defaults = {
+    origin: { y: 0.7 },
+  };
+  confetti({
+    ...defaults,
+    ...opts,
+    particleCount: Math.floor(count * particleRatio),
+  });
+};
+
+const makeConfetti = () => {
+  fire(0.25, {
+    spread: 26,
+    startVelocity: 55,
+  });
+  fire(0.2, {
+    spread: 60,
+  });
+  fire(0.35, {
+    spread: 100,
+    decay: 0.91,
+    scalar: 0.8,
+  });
+  fire(0.1, {
+    spread: 120,
+    startVelocity: 25,
+    decay: 0.92,
+    scalar: 1.2,
+  });
+  fire(0.1, {
+    spread: 120,
+    startVelocity: 45,
+  });
+};
 
 const Player = ({
   game,
@@ -81,6 +119,7 @@ const Player = ({
       );
       setGPTAnswer(response.answer);
       if (response.answer.toLowerCase() === game.wordsList?.[player.currentRound]?.toLowerCase()) {
+        makeConfetti();
         moveToNextRound(connectedAddress || "", true);
         setCanvasDisabled(false);
       }
