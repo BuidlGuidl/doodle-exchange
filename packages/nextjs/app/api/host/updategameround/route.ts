@@ -38,8 +38,8 @@ export const PATCH = async (request: Request) => {
           };
           player.rounds.push(roundEntry);
         } else {
-          player.rounds[player.currentRound].points = 0;
-          player.rounds[player.currentRound].won = false;
+          player.rounds[currentPlayerRound].points = 0;
+          player.rounds[currentPlayerRound].won = false;
         }
       }
     }

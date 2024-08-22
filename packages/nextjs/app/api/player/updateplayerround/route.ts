@@ -47,8 +47,8 @@ export const PATCH = async (request: Request) => {
       player.rounds.push(roundEntry);
     }
 
-    player.rounds[player.currentRound].points = won ? (isCurrentRound ? 3 : 1) : 0;
-    player.rounds[player.currentRound].won = won;
+    player.rounds[currentPlayerRound].points = won ? (isCurrentRound ? 3 : 1) : 0;
+    player.rounds[currentPlayerRound].won = won;
 
     if (isFinalRound || isCurrentRound) {
       const roundChannel = ablyRealtime.channels.get("updateRound");
