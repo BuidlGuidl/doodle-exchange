@@ -26,3 +26,7 @@ export async function getWordsList(numberOfWords: number) {
     return [];
   }
 }
+
+export async function getWord() {
+  return WORDS[Math.floor(Math.random() * WORDS.length)];
+}

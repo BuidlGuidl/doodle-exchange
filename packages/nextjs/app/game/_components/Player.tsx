@@ -1,61 +1,15 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import confetti from "canvas-confetti";
 import CanvasDraw from "react-canvas-draw";
 import { CirclePicker } from "react-color";
 import { useWindowSize } from "usehooks-ts";
 import { useAccount } from "wagmi";
 import { ArrowUturnLeftIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { getGpt4oClassify } from "~~/app/classify";
-import { Game, Player as playerType } from "~~/types/game/game";
+import { CanvasDrawLines, Game, Player as playerType } from "~~/types/game/game";
 import { updatePlayerStatus } from "~~/utils/doodleExchange/api/apiUtils";
+import { makeConfetti } from "~~/utils/doodleExchange/helpersClient";
 import { uploadToFirebase } from "~~/utils/uploadToFirebase";
-
-interface CanvasDrawLines extends CanvasDraw {
-  canvas: any;
-  props: {
-    brushColor: string;
-    canvasWidth: any;
-    canvasHeight: any;
-  };
-}
-
-const fire = (particleRatio: number, opts: any) => {
-  const count = 200;
-  const defaults = {
-    origin: { y: 0.7 },
-  };
-  confetti({
-    ...defaults,
-    ...opts,
-    particleCount: Math.floor(count * particleRatio),
-  });
-};
-
-const makeConfetti = () => {
-  fire(0.25, {
-    spread: 26,
-    startVelocity: 55,
-  });
-  fire(0.2, {
-    spread: 60,
-  });
-  fire(0.35, {
-    spread: 100,
-    decay: 0.91,
-    scalar: 0.8,
-  });
-  fire(0.1, {
-    spread: 120,
-    startVelocity: 25,
-    decay: 0.92,
-    scalar: 1.2,
-  });
-  fire(0.1, {
-    spread: 120,
-    startVelocity: 45,
-  });
-};
 
 const Player = ({
   game,
