@@ -68,7 +68,7 @@ export const PATCH = async (request: Request) => {
   } catch (error) {
     return new NextResponse(
       JSON.stringify({
-        error: "Error updating Game Status " + (error as Error).message,
+        error: "Error updating Game Round " + (error as Error).message,
       }),
       {
         status: 500,

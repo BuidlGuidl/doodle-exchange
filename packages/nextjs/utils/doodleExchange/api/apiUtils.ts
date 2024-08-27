@@ -35,6 +35,19 @@ export const joinGame = async (invite: string, address: string) => {
   return { success: true };
 };
 
+export const getGame = async (invite: string) => {
+  const response = await fetch(`/api/game/${invite}`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  const game = await response.json();
+  saveGameState(JSON.stringify(game));
+  return game;
+};
+
 export const updateGameStatus = async (id: string, newStatus: string, token: string) => {
   const response = await fetch("/api/host/updategamestatus", {
     method: "PATCH",
