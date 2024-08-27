@@ -1,3 +1,5 @@
+import CanvasDraw from "react-canvas-draw";
+
 export interface Round {
   round: number;
   points: number;
@@ -23,4 +25,13 @@ export interface Game {
   wordsList: string[];
   totalRounds: number;
   currentRound: number;
+}
+
+export interface CanvasDrawLines extends CanvasDraw {
+  canvas: any;
+  props: {
+    brushColor: string;
+    canvasWidth: any;
+    canvasHeight: any;
+  };
 }
