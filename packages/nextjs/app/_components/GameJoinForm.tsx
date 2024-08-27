@@ -35,15 +35,21 @@ const GameJoinForm = ({
           <h1 className="mb-4"> Enter Invite Code</h1>
           <InputBase name="inviteCode" value={inviteCode} placeholder="Invite Code" onChange={handleChange} />
         </label>
-        <button
-          className="btn btn-sm btn-primary mt-4 "
-          type="button"
-          onClick={() => handleJoin(inviteCode, connectedAddress)}
-          disabled={loading}
-        >
-          {loading && <span className="loading loading-spinner"></span>}
-          Join Game
-        </button>
+        {connectedAddress ? (
+          <button
+            className="btn btn-sm btn-primary mt-4 "
+            type="button"
+            onClick={() => handleJoin(inviteCode, connectedAddress)}
+            disabled={loading}
+          >
+            {loading && <span className="loading loading-spinner"></span>}
+            Join Game
+          </button>
+        ) : (
+          <div className="animate-pulse flex space-x-4">
+            <div className="rounded-full bg-slate-300 h-8 w-24 mt-4"></div>
+          </div>
+        )}
       </div>
     </div>
   );
