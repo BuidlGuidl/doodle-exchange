@@ -3,7 +3,7 @@ import { useRouter } from "next/navigation";
 import DrawingsList from "./DrawingsList";
 import { Game } from "~~/types/game/game";
 
-const Results = ({ game }: { game: Game }) => {
+const Results = ({ game, connectedAddress }: { game: Game; connectedAddress: string }) => {
   const router = useRouter();
 
   return (
@@ -37,7 +37,9 @@ const Results = ({ game }: { game: Game }) => {
               <ul>
                 {winners.map((winner, index) => (
                   <li key={winner} className="flex gap-6 justify-between">
-                    <span>{winner}</span>
+                    <span>
+                      {winner} {winner === connectedAddress && "(you)"}
+                    </span>
                     <span>{index == 0 ? "3" : "1"}</span>
                   </li>
                 ))}

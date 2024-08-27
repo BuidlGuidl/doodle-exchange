@@ -36,3 +36,13 @@ export const makeConfetti = () => {
     startVelocity: 45,
   });
 };
+
+export const isGuessCorrect = (guessWord: string, drawWord: string) => {
+  if (guessWord.toLowerCase() === drawWord.toLowerCase()) {
+    return true;
+  }
+  if (guessWord.endsWith(".") && guessWord.slice(0, -1).toLowerCase() === drawWord.toLowerCase()) {
+    return true;
+  }
+  return false;
+};

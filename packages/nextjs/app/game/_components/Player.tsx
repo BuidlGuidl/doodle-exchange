@@ -8,7 +8,7 @@ import { ArrowUturnLeftIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { getGpt4oClassify } from "~~/app/classify";
 import { CanvasDrawLines, Game, Player as playerType } from "~~/types/game/game";
 import { updatePlayerStatus } from "~~/utils/doodleExchange/api/apiUtils";
-import { makeConfetti } from "~~/utils/doodleExchange/helpersClient";
+import { isGuessCorrect, makeConfetti } from "~~/utils/doodleExchange/helpersClient";
 import { uploadToFirebase } from "~~/utils/uploadToFirebase";
 
 const Player = ({
@@ -72,7 +72,7 @@ const Player = ({
         drawingDataUrl,
       );
       setGPTAnswer(response.answer);
-      if (response.answer.toLowerCase() === game.wordsList?.[player.currentRound]?.toLowerCase()) {
+      if (isGuessCorrect(response.answer, game.wordsList?.[player.currentRound])) {
         makeConfetti();
         moveToNextRound(connectedAddress || "", true);
         setCanvasDisabled(false);

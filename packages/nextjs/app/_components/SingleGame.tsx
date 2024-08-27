@@ -8,7 +8,7 @@ import { ArrowUturnLeftIcon, ForwardIcon, TrashIcon } from "@heroicons/react/24/
 import { getGpt4oClassify } from "~~/app/classify";
 import { CanvasDrawLines } from "~~/types/game/game";
 import { getWord } from "~~/utils/doodleExchange/getWordsList";
-import { makeConfetti } from "~~/utils/doodleExchange/helpersClient";
+import { isGuessCorrect, makeConfetti } from "~~/utils/doodleExchange/helpersClient";
 import { uploadToFirebase } from "~~/utils/uploadToFirebase";
 
 const SingleGame = () => {
@@ -54,7 +54,7 @@ const SingleGame = () => {
     console.log(drawingDataUrl);
     const response = await getGpt4oClassify(drawingCanvas?.current?.canvas.drawing.toDataURL());
     if (response?.answer) {
-      if (response.answer.toLowerCase() === drawWord?.toLowerCase()) {
+      if (isGuessCorrect(response.answer, drawWord)) {
         makeConfetti();
       }
       setGPTAnswer(response?.answer);
@@ -65,7 +65,7 @@ const SingleGame = () => {
   };
 
   const resetGame = () => {
-    if (gptAnswer.toLowerCase() === drawWord.toLowerCase()) {
+    if (isGuessCorrect(gptAnswer, drawWord)) {
       fetchWord();
     }
     setCanvasDisabled(false);
@@ -85,7 +85,7 @@ const SingleGame = () => {
             {gptAnswer ? (
               <div className="flex flex-col items-center">
                 <button className="btn btn-sm btn-primary mb-1" onClick={resetGame}>
-                  {gptAnswer.toLowerCase() === drawWord.toLowerCase() ? "Start a new game" : "Try again"}
+                  {isGuessCorrect(gptAnswer, drawWord) ? "Start a new game" : "Try again"}
                 </button>
                 <div>
                   GPT sees <span className="font-bold">{gptAnswer}</span>
