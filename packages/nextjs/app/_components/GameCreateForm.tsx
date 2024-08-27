@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
+import { XMarkIcon } from "@heroicons/react/24/outline";
 import { WORDS } from "~~/utils/constants";
 import { saveGameState } from "~~/utils/doodleExchange/game";
 import { notification } from "~~/utils/scaffold-eth";
@@ -60,7 +61,7 @@ const GameCreationForm = ({ connectedAddress }: { connectedAddress: string }) =>
               onClick={() => toggleWordSelection(word)}
             >
               {word}
-              {selectedWords.includes(word) && <span className="ml-1 font-bold">x</span>}
+              {selectedWords.includes(word) && <XMarkIcon className="h-4 w-4" />}
             </button>
           ))}
         </div>
