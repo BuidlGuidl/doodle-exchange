@@ -81,6 +81,15 @@ const Host = ({
           Start Game
         </button>
       )}
+      <h1>Game Words</h1>
+      {game.wordsList.map((word, index) => (
+        <h1 key={index} className="flex gap-6 justify-between w-fit items-center">
+          <span>
+            Round {index + 1}: {word}
+          </span>
+        </h1>
+      ))}
+      <div className="mb-5"></div>
       <h1>Lobby {game.players.length}</h1>
       {game.players.map(player => (
         <h1 key={player.address} className="flex gap-6 justify-between w-fit items-center">
