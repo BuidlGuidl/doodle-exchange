@@ -22,11 +22,12 @@ export const PATCH = async (request: Request) => {
     }
 
     const newRound = game.currentRound + 1;
+    const isFinalRound = newRound === game.totalRounds;
 
     for (const player of game.players) {
       const currentPlayerRound = player.currentRound;
       if (currentPlayerRound < newRound) {
-        if (newRound !== game.totalRounds) player.currentRound = newRound;
+        if (!isFinalRound) player.currentRound = newRound;
         player.status = "waiting";
 
         let roundEntry = player.rounds.find((r: any) => r.round === currentPlayerRound);
@@ -37,7 +38,7 @@ export const PATCH = async (request: Request) => {
             won: false,
           };
           player.rounds.push(roundEntry);
-        } else {
+        } else if (!isFinalRound) {
           player.rounds[currentPlayerRound].points = 0;
           player.rounds[currentPlayerRound].won = false;
         }
