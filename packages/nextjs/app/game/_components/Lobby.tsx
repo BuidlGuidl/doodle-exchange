@@ -4,7 +4,7 @@ import CopyToClipboard from "react-copy-to-clipboard";
 import { CheckCircleIcon, DocumentDuplicateIcon } from "@heroicons/react/24/outline";
 import { Game } from "~~/types/game/game";
 
-const Lobby = ({ game }: { game: Game }) => {
+const Lobby = ({ game, connectedAddress }: { game: Game; connectedAddress: string }) => {
   const [inviteUrl, setInviteUrl] = useState("");
   const [inviteUrlCopied, setInviteUrlCopied] = useState(false);
   const [inviteCopied, setInviteCopied] = useState(false);
@@ -76,7 +76,11 @@ const Lobby = ({ game }: { game: Game }) => {
       <h1 className="flex justify-center text-2xl">Waiting host to start</h1>
 
       {game.players.map(player => {
-        return <h1 key={player.address}>{player.address}</h1>;
+        return (
+          <h1 key={player.address}>
+            {player.address} {player?.address === connectedAddress && "(you)"}
+          </h1>
+        );
       })}
     </div>
   );

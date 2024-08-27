@@ -140,11 +140,11 @@ const GamePage = () => {
   };
 
   if (game?.status === "finished") {
-    return <Results game={game as Game} />;
+    return <Results game={game as Game} connectedAddress={connectedAddress || ""} />;
   } else if (isHost && game) {
     return <Host game={game as Game} token={token} isUpdatingRound={isUpdatingRound} countdown={countdown} />;
   } else if (isPlayer && game && game?.status === "lobby") {
-    return <Lobby game={game as Game} />;
+    return <Lobby game={game as Game} connectedAddress={connectedAddress || ""} />;
   } else if (isPlayer && game) {
     return (
       <Player
