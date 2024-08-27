@@ -1,12 +1,23 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
+import { XMarkIcon } from "@heroicons/react/24/outline";
+import { WORDS } from "~~/utils/constants";
 import { saveGameState } from "~~/utils/doodleExchange/game";
 import { notification } from "~~/utils/scaffold-eth";
 
 const GameCreationForm = ({ connectedAddress }: { connectedAddress: string }) => {
   const router = useRouter();
-  const [sliderValue, setSliderValue] = useState(6);
   const [loading, setLoading] = useState(false);
+
+  const [selectedWords, setSelectedWords] = useState<string[]>([]);
+
+  const toggleWordSelection = (word: string) => {
+    if (selectedWords.includes(word)) {
+      setSelectedWords(selectedWords.filter(w => w !== word));
+    } else {
+      setSelectedWords([...selectedWords, word]);
+    }
+  };
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -16,7 +27,11 @@ const GameCreationForm = ({ connectedAddress }: { connectedAddress: string }) =>
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ hostAddress: connectedAddress as string, totalRounds: sliderValue }),
+      body: JSON.stringify({
+        hostAddress: connectedAddress as string,
+        totalRounds: selectedWords.length,
+        words: selectedWords,
+      }),
     });
 
     const responseData = await response.json();
@@ -32,32 +47,31 @@ const GameCreationForm = ({ connectedAddress }: { connectedAddress: string }) =>
     setLoading(false);
   };
 
-  const handleSliderChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const value = parseInt(event.target.value, 10);
-    setSliderValue(value);
-  };
-
   return (
     <div className="w-full">
       <form onSubmit={handleSubmit}>
-        <label className="block">
-          <h1 className=" mb-3 ">Choose the Number of Rounds (1-10)</h1>
-          <div className="flex items-center space-x-4">
-            <input
-              type="range"
-              min="1"
-              max="10"
-              value={sliderValue}
-              onChange={handleSliderChange}
-              className="slider appearance-none w-[87%] h-2 bg-primary rounded outline-none slider-thumb "
-            />
-            <span className="slider-value p-2 bg-primary w-[13%] font-bold rounded-md flex justify-center">
-              {sliderValue}
-            </span>
-          </div>
-        </label>
+        <h1>Select drawing for each Round(1-10)</h1>
+        <div className="my-2 flex flex-wrap gap-1">
+          {WORDS.map((word, index) => (
+            <button
+              type="button"
+              key={index}
+              disabled={!selectedWords.includes(word) && selectedWords.length == 10}
+              className={`btn btn-xs mt-1 ${selectedWords.includes(word) ? "btn-primary" : "btn-secondary"}`}
+              onClick={() => toggleWordSelection(word)}
+            >
+              {word}
+              {selectedWords.includes(word) && <XMarkIcon className="h-4 w-4" />}
+            </button>
+          ))}
+        </div>
+
         <br />
-        <button type="submit" className="btn btn-sm  btn-primary -mt-2" disabled={loading}>
+        <button
+          type="submit"
+          className="btn btn-sm  btn-primary -mt-2"
+          disabled={loading || !connectedAddress || selectedWords.length == 0}
+        >
           {loading && <span className="loading loading-spinner"></span>}
           Start Game
         </button>

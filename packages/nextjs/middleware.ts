@@ -11,7 +11,7 @@ export async function middleware(request: NextRequest) {
   // Routes that don't require authentication
   const publicRoutes = ["/api/host/create", "/api/player/join", "/api/ably"];
 
-  if (publicRoutes.includes(pathname)) {
+  if (publicRoutes.includes(pathname) || pathname.startsWith("/api/game/")) {
     return NextResponse.next();
   }
 

@@ -17,6 +17,16 @@ const useGameData = () => {
     } else return { token: null, game: null };
   };
 
+  const loadToken = () => {
+    if (typeof window != "undefined" && window != null) {
+      const gameState = window.localStorage.getItem(STORAGE_KEY);
+      if (gameState) {
+        const gameStateObj = JSON.parse(gameState);
+        return gameStateObj.token;
+      }
+    } else return null;
+  };
+
   const updateGameState = (game: string) => {
     if (typeof window != "undefined" && window != null) {
       let gameState = window.localStorage.getItem(STORAGE_KEY);
@@ -50,6 +60,7 @@ const useGameData = () => {
     loadGameState,
     updateGameState,
     updatePlayerState,
+    loadToken,
   };
 };
 

@@ -15,7 +15,7 @@ import { notification } from "~~/utils/scaffold-eth";
 
 const GamePage = () => {
   const { id } = useParams();
-  const { loadGameState, updateGameState, updatePlayerState } = useGameData();
+  const { loadGameState, updateGameState, updatePlayerState, loadToken } = useGameData();
   const { address: connectedAddress } = useAccount();
 
   const [isHost, setIsHost] = useState(false);
@@ -40,6 +40,7 @@ const GamePage = () => {
     console.log(message);
     if (player?._id === message.data._id) {
       updatePlayerState(JSON.stringify(message.data));
+      setPlayer(message.data);
     }
   });
 
@@ -72,24 +73,48 @@ const GamePage = () => {
 
   useEffect(() => {
     const loadGame = async () => {
-      const game = loadGameState();
-      if (game && game.game && game.game.inviteCode === id) {
-        const { token, game: gameState } = game;
-        if (connectedAddress === gameState.hostAddress) setIsHost(true);
-        if (gameState.players.some((player: playerType) => player.address === connectedAddress)) {
-          const player = gameState.players.find((player: playerType) => player.address === connectedAddress);
-          setPlayer(player);
-          setIsPlayer(true);
-        }
-        setGame(gameState);
-        setToken(token);
-        // if (game.player) setPlayer(game.player);
+      const response = await fetch(`/api/game/${id}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      const responseData = await response.json();
+      if (connectedAddress === responseData.hostAddress) {
+        setIsHost(true);
+        setGame(responseData);
+        setToken(loadToken());
+      } else if (responseData.players.some((player: playerType) => player.address === connectedAddress)) {
+        const player = responseData.players.find((player: playerType) => player.address === connectedAddress);
+        setPlayer(player);
+        setIsPlayer(true);
+        setGame(responseData);
+        setToken(loadToken());
       } else {
         if (connectedAddress) {
           await joinGame(id as string, connectedAddress);
           setIsPlayer(true);
         }
       }
+
+      // const game = loadGameState();
+      // if (game && game.game && game.game.inviteCode === id) {
+      //   const { token, game: gameState } = game;
+      //   if (connectedAddress === gameState.hostAddress) setIsHost(true);
+      //   if (gameState.players.some((player: playerType) => player.address === connectedAddress)) {
+      //     const player = gameState.players.find((player: playerType) => player.address === connectedAddress);
+      //     setPlayer(player);
+      //     setIsPlayer(true);
+      //   }
+      //   setGame(gameState);
+      //   setToken(token);
+      //   // if (game.player) setPlayer(game.player);
+      // } else {
+      //   if (connectedAddress) {
+      //     await joinGame(id as string, connectedAddress);
+      //     setIsPlayer(true);
+      //   }
+      // }
     };
 
     loadGame();
