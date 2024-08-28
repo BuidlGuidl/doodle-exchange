@@ -57,24 +57,30 @@ const GameCreationForm = ({ connectedAddress }: { connectedAddress: string }) =>
               type="button"
               key={index}
               disabled={!selectedWords.includes(word) && selectedWords.length == 10}
-              className={`btn btn-xs mt-1 ${selectedWords.includes(word) ? "btn-primary" : "btn-secondary"}`}
+              className={`btn btn-xs mt-1 px-1.5 ${selectedWords.includes(word) ? "btn-primary" : "btn-secondary"}`}
               onClick={() => toggleWordSelection(word)}
             >
               {word}
-              {selectedWords.includes(word) && <XMarkIcon className="h-4 w-4" />}
+              {selectedWords.includes(word) && <XMarkIcon className="h-4 w-4 " />}
             </button>
           ))}
         </div>
 
         <br />
-        <button
-          type="submit"
-          className="btn btn-sm  btn-primary -mt-2"
-          disabled={loading || !connectedAddress || selectedWords.length == 0}
-        >
-          {loading && <span className="loading loading-spinner"></span>}
-          Start Game
-        </button>
+        {connectedAddress ? (
+          <button
+            type="submit"
+            className="btn btn-sm  btn-primary -mt-2"
+            disabled={loading || !connectedAddress || selectedWords.length == 0}
+          >
+            {loading && <span className="loading loading-spinner"></span>}
+            Start Game
+          </button>
+        ) : (
+          <div className="animate-pulse flex space-x-4">
+            <div className="rounded-full bg-slate-300 h-8 w-24 mt-4"></div>
+          </div>
+        )}
       </form>
     </div>
   );

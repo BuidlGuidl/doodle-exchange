@@ -33,6 +33,7 @@ const GamePage = () => {
       const player = message.data.players.find((player: playerType) => player.address === connectedAddress);
       setPlayer(player);
       updateGameState(JSON.stringify(message.data));
+      if (player) updatePlayerState(JSON.stringify(player));
     }
   });
 
@@ -96,25 +97,6 @@ const GamePage = () => {
           setIsPlayer(true);
         }
       }
-
-      // const game = loadGameState();
-      // if (game && game.game && game.game.inviteCode === id) {
-      //   const { token, game: gameState } = game;
-      //   if (connectedAddress === gameState.hostAddress) setIsHost(true);
-      //   if (gameState.players.some((player: playerType) => player.address === connectedAddress)) {
-      //     const player = gameState.players.find((player: playerType) => player.address === connectedAddress);
-      //     setPlayer(player);
-      //     setIsPlayer(true);
-      //   }
-      //   setGame(gameState);
-      //   setToken(token);
-      //   // if (game.player) setPlayer(game.player);
-      // } else {
-      //   if (connectedAddress) {
-      //     await joinGame(id as string, connectedAddress);
-      //     setIsPlayer(true);
-      //   }
-      // }
     };
 
     loadGame();
