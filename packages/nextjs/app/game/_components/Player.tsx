@@ -71,14 +71,13 @@ const Player = ({
         connectedAddress || "",
         drawingDataUrl,
       );
+      await updatePlayerStatus(game._id, "waiting", token, connectedAddress || "", imageFbLink);
       setGPTAnswer(response.answer);
       if (isGuessCorrect(response.answer, game.wordsList?.[player.currentRound])) {
         makeConfetti();
-        moveToNextRound(connectedAddress || "", true);
+        await moveToNextRound(connectedAddress || "", true);
         setCanvasDisabled(false);
-        updatePlayerStatus(game._id, "waiting", token, connectedAddress || "");
       } else {
-        updatePlayerStatus(game._id, "waiting", token, connectedAddress || "", imageFbLink);
         setShowTryAgain(true);
       }
     } else {
