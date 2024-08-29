@@ -29,11 +29,11 @@ const GamePage = () => {
   useChannel("gameUpdate", message => {
     console.log(message);
     if (game?._id === message.data._id) {
-      setGame(message.data);
       const player = message.data.players.find((player: playerType) => player.address === connectedAddress);
       setPlayer(player);
-      updateGameState(JSON.stringify(message.data));
       if (player) updatePlayerState(JSON.stringify(player));
+      setGame(message.data);
+      updateGameState(JSON.stringify(message.data));
     }
   });
 
@@ -108,14 +108,18 @@ const GamePage = () => {
       const game = loadGameState();
       if (game && game.game) {
         const { token, game: gameState } = game;
-        setGame(gameState);
-        setToken(token);
         const player = gameState.players.find((player: playerType) => player.address === connectedAddress);
         setPlayer(player);
+        setGame(gameState);
+        setToken(token);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isPlayer]);
+
+  useEffect(() => {
+    console.log("Game just updated", game);
+  }, [game, player]);
 
   const moveToNextRound = async (address: string, won: boolean) => {
     if (game) await updatePlayerRound(game._id, token, address, won);
