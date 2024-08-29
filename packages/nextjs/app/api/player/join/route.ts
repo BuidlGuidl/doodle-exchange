@@ -43,9 +43,9 @@ export const PATCH = async (request: Request) => {
     const player = game.players.find((p: Player) => p.address === playerAddress);
 
     const gameChannel = ablyRealtime.channels.get(`gameUpdate`);
-    gameChannel.publish(`gameUpdate`, savedGame);
+    await gameChannel.publish(`gameUpdate`, savedGame);
     // const playerChannel = ablyRealtime.channels.get(`playerUpdate`);
-    // playerChannel.publish(`playerUpdate`, player);
+    // await playerChannel.publish(`playerUpdate`, player);
     return new NextResponse(
       JSON.stringify({ message: "Joined game Successfully", token, game: savedGame, player: player }),
       {

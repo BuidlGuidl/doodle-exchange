@@ -52,7 +52,7 @@ export const PATCH = async (request: Request) => {
 
     if (isFinalRound || isCurrentRound) {
       const roundChannel = ablyRealtime.channels.get("updateRound");
-      roundChannel.publish("updateRound", game);
+      await roundChannel.publish("updateRound", game);
     }
 
     if (isFinalRound) {
@@ -71,8 +71,8 @@ export const PATCH = async (request: Request) => {
 
     const gameChannel = ablyRealtime.channels.get("gameUpdate");
     const playerChannel = ablyRealtime.channels.get("playerUpdate");
-    gameChannel.publish("gameUpdate", updatedGame);
-    playerChannel.publish("playerUpdate", player);
+    await gameChannel.publish("gameUpdate", updatedGame);
+    await playerChannel.publish("playerUpdate", player);
 
     return new NextResponse(
       JSON.stringify({
