@@ -1,10 +1,31 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 import DrawingsList from "./DrawingsList";
+import { Address } from "~~/components/scaffold-eth";
 import { Game } from "~~/types/game/game";
+
+const getFinalResults = (game: Game) => {
+  const playersScore = new Map();
+  game?.players.forEach(player => {
+    playersScore.set(player?.address, 0);
+  });
+  game?.winners.forEach(winners => {
+    winners.forEach((winner, index) => {
+      if (playersScore.has(winner)) {
+        const newScore = index == 0 ? 3 : 1;
+        playersScore.set(winner, playersScore.get(winner) + newScore);
+      } else {
+        playersScore.set(winner, index == 0 ? 3 : 1);
+      }
+    });
+  });
+  return playersScore;
+};
 
 const Results = ({ game, connectedAddress }: { game: Game; connectedAddress: string }) => {
   const router = useRouter();
+
+  const playersScore = getFinalResults(game);
 
   return (
     <div className="p-6">
@@ -20,33 +41,23 @@ const Results = ({ game, connectedAddress }: { game: Game; connectedAddress: str
           </button>
         </div>
         <h1 className="mx-auto text-2xl">Results</h1>
-        {/* 
-        {game.winners &&
-          game.winners.map((winner, index) => {
-            return (
-              <h1 key={`${winner}_${index}`} className="mx-auto">
-                The Round {index + 1} winner is {winner}
-              </h1>
-            );
-          })} */}
+        <div className="flex flex-col h-36 overflow-y-scroll mx-auto">
+          <li className="flex gap-6 justify-between">
+            <span>Player</span>
+            <span>Score</span>
+          </li>
+          {Array.from(playersScore.entries())
+            .sort((a, b) => b[1] - a[1])
+            .map(([player, score], index) => {
+              return (
+                <li key={index} className="flex gap-6 justify-between">
+                  <Address address={player} /> {player === connectedAddress && "(you)"}
+                  <span>{score}</span>
+                </li>
+              );
+            })}
+        </div>
 
-        {game.winners.map((winners, index) => {
-          return (
-            <div key={index} className="flex flex-col h-36 overflow-y-scroll mx-auto">
-              <h1>{`Round ${index + 1} Winners`}</h1>
-              <ul>
-                {winners.map((winner, index) => (
-                  <li key={winner} className="flex gap-6 justify-between">
-                    <span>
-                      {winner} {winner === connectedAddress && "(you)"}
-                    </span>
-                    <span>{index == 0 ? "3" : "1"}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          );
-        })}
         <DrawingsList game={game} />
       </div>
     </div>

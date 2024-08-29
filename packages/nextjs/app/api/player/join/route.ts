@@ -37,6 +37,12 @@ export const PATCH = async (request: Request) => {
       });
     }
 
+    if (game?.status === "finished") {
+      return new NextResponse(JSON.stringify({ message: "Game has ended", token, game: game }), {
+        status: 200,
+      });
+    }
+
     game.players.push({ address: playerAddress, status: "waiting" });
     const savedGame = await game.save();
 
