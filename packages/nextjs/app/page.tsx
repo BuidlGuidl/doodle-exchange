@@ -2,20 +2,17 @@
 
 import { useState } from "react";
 import GameCreationForm from "./_components/GameCreateForm";
-import GameJoinForm from "./_components/GameJoinForm";
 import SingleGame from "./_components/SingleGame";
 import type { NextPage } from "next";
 import { useAccount } from "wagmi";
 
-type gameStateType = "createGame" | "joinGame" | "singleGame";
+type gameStateType = "createGame" | "singleGame";
 
 const Home: NextPage = () => {
   const { address: connectedAddress } = useAccount();
-  const [inviteCode, setInviteCode] = useState("");
-  const [gameState, setGameState] = useState<gameStateType>("joinGame");
+  const [gameState, setGameState] = useState<gameStateType>("createGame");
 
   const menuItems = [
-    { state: "joinGame", label: "Join Game" },
     { state: "createGame", label: "Start Game" },
     { state: "singleGame", label: "Single Game" },
   ];
@@ -41,13 +38,6 @@ const Home: NextPage = () => {
 
         <div className="w-full mx-auto flex">
           {gameState == "createGame" && <GameCreationForm connectedAddress={connectedAddress as string} />}
-          {gameState == "joinGame" && (
-            <GameJoinForm
-              inviteCode={inviteCode}
-              setInviteCode={setInviteCode}
-              connectedAddress={connectedAddress as string}
-            />
-          )}
           {gameState == "singleGame" && <SingleGame />}
         </div>
       </div>
