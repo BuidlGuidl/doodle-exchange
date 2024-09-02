@@ -30,8 +30,8 @@ const ENUM_STATUSES = {
   warning: <ExclamationTriangleIcon className="w-7 text-warning" />,
 };
 
-const DEFAULT_DURATION = 3000;
-const DEFAULT_POSITION: ToastPosition = "top-center";
+const DEFAULT_DURATION = 1000;
+const DEFAULT_POSITION: ToastPosition = "top-right";
 
 /**
  * Custom Notification

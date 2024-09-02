@@ -54,7 +54,6 @@ const GamePage = () => {
         game?.currentRound == (game?.totalRounds as number) - 1
           ? `Ending game in ${countdown} seconds`
           : `Moving to the next round in ${countdown} seconds`,
-        { duration: 3000 },
       );
 
       const interval = setInterval(() => {
