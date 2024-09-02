@@ -24,7 +24,7 @@ const Home: NextPage = () => {
     <>
       <div className="mx-auto mt-5 p-6 flex flex-col max-w-xl">
         <div className="flex justify-center">
-          <ul className="menu menu-horizontal justify-center p-2 bg-base-300 rounded-full mb-8 w-fit mx-auto">
+          <ul className="menu menu-horizontal justify-center p-2 bg-base-300 rounded-full mb-5 w-fit mx-auto">
             {menuItems.map(item => (
               <li key={item.state} onClick={() => setGameState(item.state as gameStateType)}>
                 <div
