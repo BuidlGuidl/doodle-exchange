@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import QRCode from "qrcode.react";
 import CopyToClipboard from "react-copy-to-clipboard";
 import { CheckCircleIcon, DocumentDuplicateIcon } from "@heroicons/react/24/outline";
+import { Address } from "~~/components/scaffold-eth";
 import { Game } from "~~/types/game/game";
 
 const Lobby = ({ game, connectedAddress }: { game: Game; connectedAddress: string }) => {
@@ -77,8 +78,9 @@ const Lobby = ({ game, connectedAddress }: { game: Game; connectedAddress: strin
 
       {game.players.map(player => {
         return (
-          <h1 key={player.address}>
-            {player.address} {player?.address === connectedAddress && "(you)"}
+          <h1 key={player.address} className="inline-flex">
+            <Address address={player.address} />{" "}
+            <span className="mt-1">{player.address === connectedAddress && "(you)"}</span>
           </h1>
         );
       })}
