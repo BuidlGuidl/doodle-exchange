@@ -1,61 +1,96 @@
-import React from "react";
+import React, { useMemo } from "react";
 import Image from "next/image";
 import { Game } from "~~/types/game/game";
-import { isGuessCorrect } from "~~/utils/doodleExchange/helpersClient";
 
-type drawingListInfo = {
+type DrawingListInfo = {
   drawingLink: string;
   drawWord: string;
   gptGuess: string;
+  isCorrect: boolean;
 };
 
-function getAllDrawings(game: Game): drawingListInfo[] {
-  const allDrawings: drawingListInfo[] = [];
+function getAllDrawings(game: Game): { [key: string]: DrawingListInfo[] } {
+  return game.players.reduce(
+    (drawings, player) => {
+      player.rounds.forEach(round => {
+        round.drawings.forEach(drawing => {
+          if (drawing.includes("%2F")) {
+            const [drawWordRaw, gptGuessRaw] = drawing.split("%2F");
+            const drawWord = drawWordRaw.split("/o/")[1].toLowerCase();
+            const gptGuess = gptGuessRaw.toLowerCase();
 
-  game.players.forEach(player => {
-    player.rounds.forEach(round => {
-      round.drawings.forEach(drawing => {
-        if (drawing.includes("%2F")) {
-          allDrawings.push({
-            drawingLink: drawing,
-            drawWord: drawing.split("%2F")[0].split("/o/")[1],
-            gptGuess: drawing.split("%2F")[1],
-          });
-        }
+            if (!drawings[drawWord]) {
+              drawings[drawWord] = [];
+            }
+
+            drawings[drawWord].push({
+              drawingLink: drawing,
+              drawWord,
+              gptGuess,
+              isCorrect: drawWord === gptGuess,
+            });
+          }
+        });
       });
-    });
-  });
-
-  if (game?.status === "finished") {
-    return allDrawings;
-  }
-
-  return allDrawings.filter(
-    drawingsInfo => !isGuessCorrect(game?.wordsList[game?.currentRound], drawingsInfo?.gptGuess),
+      return drawings;
+    },
+    {} as { [key: string]: DrawingListInfo[] },
   );
 }
 
+const DrawingSection = ({
+  round,
+  drawings,
+  correct,
+}: {
+  round: number;
+  drawings: DrawingListInfo[];
+  correct: boolean;
+}) => (
+  <>
+    <h2>
+      Round {round} ({correct ? "Correct" : "Incorrect"})
+    </h2>
+    <div className="flex flex-wrap gap-2 mb-2">
+      {drawings.map((drawingInfo, index) => (
+        <div key={index} className="border border-neutral-400">
+          <Image src={drawingInfo.drawingLink} alt={`Drawing ${index + 1}`} width={200} height={200} />
+          <p className="text-center my-0">{drawingInfo.gptGuess}</p>
+        </div>
+      ))}
+    </div>
+  </>
+);
+
 const DrawingsList = ({ game }: { game: Game }) => {
-  const drawingsList = getAllDrawings(game);
+  const drawingsList = useMemo(() => getAllDrawings(game), [game]);
   console.log(game);
   console.log(drawingsList);
   return (
     <>
-      {drawingsList.length > 0 && (
-        <div>
-          <h1>Drawings</h1>
-          <div className="flex flex-wrap gap-2">
-            {drawingsList.reverse().map((drawingInfo, index) => (
-              <div key={index} className="border border-neutral-400">
-                <div>
-                  <Image src={drawingInfo?.drawingLink} alt={`Drawing ${index + 1}`} width={200} height={200} />
-                </div>
-                <p className="text-center my-0">{drawingInfo?.gptGuess}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}{" "}
+      {game.wordsList
+        .slice()
+        .reverse()
+        .map((word, index) => {
+          const roundNumber = game?.totalRounds - index;
+          const drawingsForWord = drawingsList[word.toLowerCase()] || [];
+
+          const correctDrawings = drawingsForWord.filter(drawing => drawing.isCorrect);
+          const incorrectDrawings = drawingsForWord.filter(drawing => !drawing.isCorrect);
+
+          const showRound = game.status === "finished" || word !== game?.wordsList[game?.currentRound];
+
+          return (
+            <div key={roundNumber}>
+              {showRound && correctDrawings.length > 0 && (
+                <DrawingSection round={roundNumber} drawings={correctDrawings} correct={true} />
+              )}
+              {incorrectDrawings.length > 0 && (
+                <DrawingSection round={roundNumber} drawings={incorrectDrawings} correct={false} />
+              )}
+            </div>
+          );
+        })}
     </>
   );
 };

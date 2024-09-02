@@ -3,6 +3,7 @@ import DrawingsList from "./DrawingsList";
 import QRCode from "qrcode.react";
 import CopyToClipboard from "react-copy-to-clipboard";
 import { CheckCircleIcon, DocumentDuplicateIcon } from "@heroicons/react/24/outline";
+import { Address } from "~~/components/scaffold-eth";
 import { Game } from "~~/types/game/game";
 import { updateGameStatus } from "~~/utils/doodleExchange/api/apiUtils";
 
@@ -93,7 +94,7 @@ const Host = ({
       <h1>Lobby {game.players.length}</h1>
       {game.players.map(player => (
         <h1 key={player.address} className="flex gap-6 justify-between w-fit items-center">
-          <span> {player.address}</span>
+          <Address address={player.address} />
           <span className="w-24"> {player.status}</span>
           <span>Round: {player.currentRound + 1}</span>
         </h1>
