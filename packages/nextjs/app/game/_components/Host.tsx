@@ -75,7 +75,7 @@ const Host = ({
         {isUpdatingRound &&
           (game.currentRound === game.totalRounds - 1
             ? `Ending the game in ${countdown} Seconds`
-            : `Moving to next round in ${countdown} Seconds`)}
+            : `This round ends in ${countdown} Seconds`)}
       </div>
       {game?.status === "lobby" && (
         <button className="btn btn-sm btn-primary my-2" onClick={() => updateGameStatus(game._id, "ongoing", token)}>

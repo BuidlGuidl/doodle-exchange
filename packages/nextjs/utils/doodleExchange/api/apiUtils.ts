@@ -23,16 +23,16 @@ export const joinGame = async (invite: string, address: string) => {
     body: JSON.stringify({ inviteCode: invite, playerAddress: address }),
   });
 
-  const updatedGame = await response.json();
+  const data = await response.json();
 
-  if (updatedGame.error) {
-    notification.error(updatedGame.error);
+  if (data.error) {
+    notification.error(data.error);
     return { success: false };
   }
 
-  saveGameState(JSON.stringify(updatedGame));
-  notification.success(`${updatedGame.message}`);
-  return { success: true };
+  saveGameState(JSON.stringify(data));
+  notification.success(`${data.message}`);
+  return { success: true, game: data.game, player: data.player, token: data.token };
 };
 
 export const getGame = async (invite: string) => {
@@ -85,8 +85,6 @@ export const updatePlayerRound = async (id: string, token: string, address: stri
     console.log(updatedGame.error);
     return;
   }
-
-  // notification.success(`Moving to next round: ${newRound + 1}`);
 };
 
 export const updateGameRound = async (id: string, token: string) => {
