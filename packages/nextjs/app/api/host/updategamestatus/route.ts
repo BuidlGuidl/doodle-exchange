@@ -26,8 +26,14 @@ export const PATCH = async (request: Request) => {
     game.status = newStatus;
     const updatedGame = await game.save();
 
+    if (newStatus == "ongoing") {
+      const startResumeChannel = ablyRealtime.channels.get(`startResumeGame`);
+      await startResumeChannel.publish(`startResumeGame`, updatedGame);
+    }
+
     const channel = ablyRealtime.channels.get(`gameUpdate`);
     await channel.publish(`gameUpdate`, updatedGame);
+
     return new NextResponse(JSON.stringify({ message: `Updated game status to ${newStatus}`, game: updatedGame }), {
       status: 200,
     });
