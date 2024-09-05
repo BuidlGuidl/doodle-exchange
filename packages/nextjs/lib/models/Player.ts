@@ -5,6 +5,10 @@ export const playerSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  userName: {
+    type: String,
+    required: true,
+  },
   status: {
     type: String,
     enum: ["waiting", "drawing", "classifying"],

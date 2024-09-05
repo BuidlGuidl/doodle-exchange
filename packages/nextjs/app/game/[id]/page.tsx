@@ -76,7 +76,9 @@ const GamePage = () => {
         setIsUpdatingRound(false);
         setCountdown(20);
         clearInterval(interval);
-        setShowCountdownOverlay(true);
+        if (game && game?.currentRound < game?.totalRounds - 1) {
+          setShowCountdownOverlay(true);
+        }
       }, 20000);
     }
   });
@@ -144,9 +146,7 @@ const GamePage = () => {
           countdown={countdown}
           token={token}
         />
-        {showCountdownOverlay && game.currentRound < game.totalRounds && (
-          <RoundCountdown onCountdownEnd={handleCountdownEnd} />
-        )}
+        {showCountdownOverlay && <RoundCountdown onCountdownEnd={handleCountdownEnd} />}
       </>
     );
   } else {
