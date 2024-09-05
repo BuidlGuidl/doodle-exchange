@@ -3,8 +3,6 @@ import connectdb from "~~/lib/db";
 import Game from "~~/lib/models/Game";
 import { ablyRealtime } from "~~/lib/socket";
 
-// import { ablyRealtime } from "~~/lib/socket";
-
 export const PATCH = async (request: Request) => {
   try {
     const body = await request.json();

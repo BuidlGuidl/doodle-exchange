@@ -43,7 +43,7 @@ const Player = ({
   const isLastRound = game.currentRound === game.totalRounds - 1;
   const countdownText = isLastRound
     ? `Ending the game in ${countdown} Seconds`
-    : `Moving to next round in ${countdown} Seconds`;
+    : `This round ends in ${countdown} Seconds`;
 
   useEffect(() => {
     if (calculatedCanvaSize !== 1) {
@@ -83,7 +83,7 @@ const Player = ({
     } else {
       console.log("error with classification fetching part");
     }
-    setCanvasDisabled(true);
+    setCanvasDisabled(false);
     setDrawingStarted(false);
   };
 

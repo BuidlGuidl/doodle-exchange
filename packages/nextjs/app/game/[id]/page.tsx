@@ -2,10 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import Host from "../_components/Host";
 import Lobby from "../_components/Lobby";
 import Player from "../_components/Player";
 import Results from "../_components/Results";
+import RoundCountdown from "../_components/RoundCountdown";
 import { useChannel } from "ably/react";
 import { useAccount } from "wagmi";
 import useGameData from "~~/hooks/doodleExchange/useGameData";
@@ -15,8 +17,9 @@ import { notification } from "~~/utils/scaffold-eth";
 
 const GamePage = () => {
   const { id } = useParams();
-  const { loadGameState, updateGameState, updatePlayerState, loadToken } = useGameData();
+  const { updateGameState, updatePlayerState, loadToken } = useGameData();
   const { address: connectedAddress } = useAccount();
+  const router = useRouter();
 
   const [isHost, setIsHost] = useState(false);
   const [isPlayer, setIsPlayer] = useState(false);
@@ -25,6 +28,7 @@ const GamePage = () => {
   const [token, setToken] = useState("");
   const [isUpdatingRound, setIsUpdatingRound] = useState(false);
   const [countdown, setCountdown] = useState(20);
+  const [showCountdownOverlay, setShowCountdownOverlay] = useState(false);
 
   useChannel("gameUpdate", message => {
     console.log(message);
@@ -34,6 +38,13 @@ const GamePage = () => {
       if (player) updatePlayerState(JSON.stringify(player));
       setGame(message.data);
       updateGameState(JSON.stringify(message.data));
+    }
+  });
+
+  useChannel("startResumeGame", message => {
+    console.log(message);
+    if (game?._id === message.data._id) {
+      setShowCountdownOverlay(true);
     }
   });
 
@@ -60,13 +71,16 @@ const GamePage = () => {
         setCountdown(oldCount => (oldCount <= 1 ? 0 : oldCount - 1));
       }, 1000);
 
-      setTimeout(() => {
+      setTimeout(async () => {
         if (isHost && game) {
-          updateGameRound(game._id, token);
+          await updateGameRound(game._id, token);
         }
         setIsUpdatingRound(false);
         setCountdown(20);
         clearInterval(interval);
+        if (game && game?.currentRound < game?.totalRounds - 1) {
+          setShowCountdownOverlay(true);
+        }
       }, 20000);
     }
   });
@@ -79,7 +93,13 @@ const GamePage = () => {
           "Content-Type": "application/json",
         },
       });
+
       const responseData = await response.json();
+      if (responseData.error) {
+        router.push(`/`);
+        notification.error(responseData.error);
+        return;
+      }
       if (connectedAddress === responseData.hostAddress) {
         setIsHost(true);
         setGame(responseData);
@@ -92,8 +112,16 @@ const GamePage = () => {
         setToken(loadToken());
       } else {
         if (connectedAddress) {
-          await joinGame(id as string, connectedAddress);
-          setIsPlayer(true);
+          const data = await joinGame(id as string, connectedAddress);
+          if (data.success) {
+            setGame(data.game);
+            setPlayer(data.player);
+            setToken(data.token);
+            setIsPlayer(true);
+          } else {
+            router.push(`/`);
+            // notification.error(data.error);
+          }
         }
       }
     };
@@ -102,26 +130,12 @@ const GamePage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [connectedAddress, id]);
 
-  useEffect(() => {
-    if (!game && isPlayer) {
-      const game = loadGameState();
-      if (game && game.game) {
-        const { token, game: gameState } = game;
-        const player = gameState.players.find((player: playerType) => player.address === connectedAddress);
-        setPlayer(player);
-        setGame(gameState);
-        setToken(token);
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isPlayer]);
-
-  useEffect(() => {
-    console.log("Game just updated", game);
-  }, [game, player]);
-
   const moveToNextRound = async (address: string, won: boolean) => {
     if (game) await updatePlayerRound(game._id, token, address, won);
+  };
+
+  const handleCountdownEnd = () => {
+    setShowCountdownOverlay(false); // Hide the overlay after countdown ends
   };
 
   if (game?.status === "finished") {
@@ -132,14 +146,17 @@ const GamePage = () => {
     return <Lobby game={game as Game} connectedAddress={connectedAddress || ""} />;
   } else if (isPlayer && game) {
     return (
-      <Player
-        game={game as Game}
-        moveToNextRound={moveToNextRound}
-        player={player as playerType}
-        isUpdatingRound={isUpdatingRound}
-        countdown={countdown}
-        token={token}
-      />
+      <>
+        <Player
+          game={game as Game}
+          moveToNextRound={moveToNextRound}
+          player={player as playerType}
+          isUpdatingRound={isUpdatingRound}
+          countdown={countdown}
+          token={token}
+        />
+        {showCountdownOverlay && <RoundCountdown onCountdownEnd={handleCountdownEnd} />}
+      </>
     );
   } else {
     return (

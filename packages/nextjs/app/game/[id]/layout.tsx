@@ -13,7 +13,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         <ChannelProvider channelName="gameUpdate">
           <ChannelProvider channelName="playerUpdate">
             <ChannelProvider channelName="updateRound">
-              <main>{children}</main>
+              <ChannelProvider channelName="startResumeGame">
+                <main>{children}</main>
+              </ChannelProvider>
             </ChannelProvider>
           </ChannelProvider>
         </ChannelProvider>
