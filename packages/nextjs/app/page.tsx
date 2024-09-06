@@ -19,7 +19,7 @@ const Home: NextPage = () => {
 
   return (
     <>
-      <div className="mx-auto mt-5 p-6 flex flex-col max-w-xl">
+      <div className="mx-auto  p-6 flex flex-col max-w-xl">
         <div className="flex justify-center">
           <ul className="menu menu-horizontal justify-center p-2 bg-base-300 rounded-full mb-5 w-fit mx-auto">
             {menuItems.map(item => (

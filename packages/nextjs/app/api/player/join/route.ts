@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { fetchOrCreateUsername } from "../../utils/utils";
 import { SignJWT } from "jose";
 import doodleConfig from "~~/doodle.config";
 import connectdb from "~~/lib/db";
@@ -47,7 +48,9 @@ export const PATCH = async (request: Request) => {
       });
     }
 
-    game.players.push({ address: playerAddress, status: "waiting" });
+    const playerUsername = await fetchOrCreateUsername(playerAddress);
+
+    game.players.push({ address: playerAddress, status: "waiting", userName: playerUsername });
     const savedGame = await game.save();
 
     const player = game.players.find((p: Player) => p.address === playerAddress);

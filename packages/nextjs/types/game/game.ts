@@ -9,6 +9,7 @@ export interface Round {
 
 export interface Player {
   address: string;
+  userName: string;
   status: "waiting" | "drawing" | "classifying";
   currentRound: number;
   rounds: Round[];
@@ -18,6 +19,7 @@ export interface Player {
 export interface Game {
   _id: string;
   hostAddress: string;
+  hostUsername: string;
   status: "lobby" | "ongoing" | "paused" | "finished";
   inviteCode: string;
   players: Player[];

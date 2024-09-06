@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import Host from "../_components/Host";
 import Lobby from "../_components/Lobby";
 import Player from "../_components/Player";
@@ -18,6 +19,7 @@ const GamePage = () => {
   const { id } = useParams();
   const { updateGameState, updatePlayerState, loadToken } = useGameData();
   const { address: connectedAddress } = useAccount();
+  const router = useRouter();
 
   const [isHost, setIsHost] = useState(false);
   const [isPlayer, setIsPlayer] = useState(false);
@@ -76,7 +78,9 @@ const GamePage = () => {
         setIsUpdatingRound(false);
         setCountdown(20);
         clearInterval(interval);
-        setShowCountdownOverlay(true);
+        if (game && game?.currentRound < game?.totalRounds - 1) {
+          setShowCountdownOverlay(true);
+        }
       }, 20000);
     }
   });
@@ -89,7 +93,13 @@ const GamePage = () => {
           "Content-Type": "application/json",
         },
       });
+
       const responseData = await response.json();
+      if (responseData.error) {
+        router.push(`/`);
+        notification.error(responseData.error);
+        return;
+      }
       if (connectedAddress === responseData.hostAddress) {
         setIsHost(true);
         setGame(responseData);
@@ -109,7 +119,8 @@ const GamePage = () => {
             setToken(data.token);
             setIsPlayer(true);
           } else {
-            setIsPlayer(false);
+            router.push(`/`);
+            // notification.error(data.error);
           }
         }
       }
@@ -144,9 +155,7 @@ const GamePage = () => {
           countdown={countdown}
           token={token}
         />
-        {showCountdownOverlay && game.currentRound < game.totalRounds && (
-          <RoundCountdown onCountdownEnd={handleCountdownEnd} />
-        )}
+        {showCountdownOverlay && <RoundCountdown onCountdownEnd={handleCountdownEnd} />}
       </>
     );
   } else {

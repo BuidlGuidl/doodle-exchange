@@ -11,9 +11,26 @@ export const GET = async (request: Request) => {
     await connectdb();
 
     const game = await Game.findOne({ inviteCode });
+    if (!game) {
+      return new NextResponse(
+        JSON.stringify({
+          error: "Game not found",
+        }),
+        {
+          status: 404,
+        },
+      );
+    }
 
     return new NextResponse(JSON.stringify(game), { status: 200 });
   } catch (error) {
-    return new NextResponse("Error fetching games " + error, { status: 500 });
+    return new NextResponse(
+      JSON.stringify({
+        error: "Error fetching Game " + (error as Error).message,
+      }),
+      {
+        status: 500,
+      },
+    );
   }
 };

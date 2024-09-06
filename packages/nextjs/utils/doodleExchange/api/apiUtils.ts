@@ -132,3 +132,41 @@ export const updatePlayerStatus = async (
     return;
   }
 };
+
+export const createUsername = async (address: string) => {
+  const response = await fetch("/api/game/createusername", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ address: address }),
+  });
+
+  const data = await response.json();
+
+  if (data.error) {
+    return { success: false };
+  }
+
+  return { success: true, username: data.username };
+};
+
+export const editUsername = async (address: string, newUsername: string) => {
+  const response = await fetch("/api/game/createusername", {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ address: address, newUsername: newUsername }),
+  });
+
+  const data = await response.json();
+
+  if (data.error) {
+    notification.error(data.error);
+    return { success: false };
+  }
+
+  notification.success(`${data.message}`);
+  return { success: true, username: data.username };
+};

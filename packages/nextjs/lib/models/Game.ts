@@ -8,6 +8,10 @@ const gameSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    hostUsername: {
+      type: String,
+      required: true,
+    },
     status: {
       type: String,
       enum: ["lobby", "ongoing", "paused", "finished"],
