@@ -160,8 +160,11 @@ const GamePage = () => {
     );
   } else {
     return (
-      <div className="p-4">
-        <h1>Loading...</h1>
+      <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30 z-50">
+        <span className="loading loading-ball loading-xs"></span>
+        <span className="loading loading-ball loading-sm"></span>
+        <span className="loading loading-ball loading-md"></span>
+        <span className="loading loading-ball loading-lg"></span>
       </div>
     );
   }

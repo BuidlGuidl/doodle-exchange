@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import Leaderboard from "./Leaderboard";
 import CanvasDraw from "react-canvas-draw";
 import { CirclePicker } from "react-color";
 import { useWindowSize } from "usehooks-ts";
@@ -105,7 +106,7 @@ const Player = ({
   }
 
   return (
-    <div className="flex items-center flex-col flex-grow pt-3">
+    <div className="flex items-center flex-col flex-grow pt-3 min-h-screen">
       {finalDrawing ? (
         <>
           <div className="mb-1.5 text-center">
@@ -187,6 +188,9 @@ const Player = ({
           </div>
         </>
       )}
+      <div className="flex w-fit mt-24 md:justify-end justify-center md:fixed md:right-5 md:bottom-12">
+        <Leaderboard game={game} />
+      </div>
     </div>
   );
 };
