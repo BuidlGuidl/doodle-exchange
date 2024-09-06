@@ -1,3 +1,5 @@
+import { Game } from "~~/types/game/game";
+
 const STORAGE_KEY = "game_sk";
 
 export const saveGameState = (gameState: string) => {
@@ -40,3 +42,35 @@ export const updatePlayerState = (player: string) => {
     }
   }
 };
+
+export function getTopPlayers(game: Game, playerAddress: string) {
+  const playersWithPoints = game.players.map(player => {
+    const totalPoints = player.rounds.reduce((acc, round) => acc + round.points, 0);
+    return {
+      address: player.address,
+      userName: player.userName,
+      totalPoints,
+    };
+  });
+
+  playersWithPoints.sort((a, b) => b.totalPoints - a.totalPoints);
+
+  const rankedPlayers = playersWithPoints.map((player, index) => ({
+    ...player,
+    rank: index + 1,
+  }));
+
+  const playerIndex = rankedPlayers.findIndex(p => p.address === playerAddress);
+
+  if (playerIndex === -1) {
+    throw new Error("Player not found");
+  }
+
+  const topPlayers = rankedPlayers.slice(0, 3);
+
+  if (playerIndex > 2) {
+    topPlayers.push(rankedPlayers[playerIndex]);
+  }
+
+  return topPlayers.slice(0, Math.min(4, rankedPlayers.length));
+}

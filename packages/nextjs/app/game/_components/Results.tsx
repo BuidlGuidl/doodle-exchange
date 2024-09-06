@@ -57,21 +57,26 @@ const Results = ({ game, connectedAddress }: { game: Game; connectedAddress: str
         </div>
         <h1 className="mx-auto text-2xl">Results</h1>
         <div className="flex flex-col h-36 overflow-y-scroll mx-auto">
-          <li className="flex gap-6 justify-between">
-            <span>Player</span>
-            <span>Score</span>
-          </li>
-          {playerResults.map((player, index) => {
-            return (
-              <li key={index} className="flex gap-6 justify-between">
-                {/* <Address address={player} /> {player === connectedAddress && "(you)"} */}
-                <span>
-                  {player.userName} {player.address === connectedAddress && " (you)"}
-                </span>
-                <span>{player.totalPoints}</span>
-              </li>
-            );
-          })}
+          <table className="table max-w-xs table-zebra shadow-lg">
+            <thead>
+              <tr>
+                <th>Rank</th>
+                <th>Player</th>
+                <th>Score</th>
+              </tr>
+            </thead>
+            <tbody>
+              {playerResults.map((player: any, index) => (
+                <tr key={player.address}>
+                  <td>{index}</td>
+                  <td>
+                    {player.userName} {connectedAddress == player.address ? "(You)" : ""}
+                  </td>
+                  <td>{player.totalPoints}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
 
         <DrawingsList game={game} />
