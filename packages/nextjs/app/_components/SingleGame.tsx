@@ -78,7 +78,7 @@ const SingleGame = () => {
   }
 
   return (
-    <div className="flex items-center flex-col flex-grow -mt-6">
+    <div className="flex items-center flex-col flex-grow -mt-2">
       {finalDrawing ? (
         <>
           <div className="mb-1.5 text-center">

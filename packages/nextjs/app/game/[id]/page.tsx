@@ -64,7 +64,7 @@ const GamePage = () => {
       notification.info(
         game?.currentRound == (game?.totalRounds as number) - 1
           ? `Ending game in ${countdown} seconds`
-          : `Moving to the next round in ${countdown} seconds`,
+          : `Next round begins in ${countdown} seconds`,
       );
 
       const interval = setInterval(() => {
