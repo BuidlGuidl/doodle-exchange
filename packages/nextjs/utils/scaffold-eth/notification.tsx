@@ -31,7 +31,7 @@ const ENUM_STATUSES = {
 };
 
 const DEFAULT_DURATION = 1000;
-const DEFAULT_POSITION: ToastPosition = "top-right";
+const DEFAULT_POSITION: ToastPosition = "top-center";
 
 /**
  * Custom Notification
