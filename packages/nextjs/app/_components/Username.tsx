@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { isAddress } from "viem";
-import { normalize } from "viem/ens";
-import { useAccount, useEnsAvatar, useEnsName } from "wagmi";
+import { loogieBlo } from "loogie-blo";
+import { useAccount } from "wagmi";
 import { CheckIcon, PencilIcon, XMarkIcon } from "@heroicons/react/24/outline";
-import { BlockieAvatar } from "~~/components/scaffold-eth";
+// import { BlockieAvatar } from "~~/components/scaffold-eth";
 import { createUsername, editUsername } from "~~/utils/doodleExchange/api/apiUtils";
 
 const Username = () => {
@@ -12,32 +12,10 @@ const Username = () => {
   const { address } = useAccount();
 
   const [userName, setUsername] = useState("");
-  const [ensAvatar, setEnsAvatar] = useState<string | null>();
   const [isEditing, setIsEditing] = useState(false);
   const [newUsername, setNewUsername] = useState("");
 
   const isHomePage = pathname === "/";
-
-  const { data: fetchedEns } = useEnsName({
-    address: address,
-    chainId: 1,
-    query: {
-      enabled: isAddress(address ?? ""),
-    },
-  });
-
-  const { data: fetchedEnsAvatar } = useEnsAvatar({
-    name: fetchedEns ? normalize(fetchedEns) : undefined,
-    chainId: 1,
-    query: {
-      enabled: Boolean(fetchedEns),
-      gcTime: 30_000,
-    },
-  });
-
-  useEffect(() => {
-    setEnsAvatar(fetchedEnsAvatar);
-  }, [fetchedEnsAvatar]);
 
   useEffect(() => {
     const fetchUsername = async () => {
@@ -58,16 +36,24 @@ const Username = () => {
   return (
     <div className="flex gap-1 items-center">
       <summary tabIndex={0} className=" bg-secondary rounded-full btn-sm flex items-center pl-0 pr-2 shadow-md gap-0">
-        <BlockieAvatar address={address || ""} size={30} ensImage={ensAvatar} />
+        {address && (
+          <Image
+            alt={address + " loogie"}
+            src={loogieBlo(address as `0x${string}`)}
+            width={60}
+            height={60}
+            className="rounded-full -ml-4"
+          />
+        )}
         {userName == "" && (
           <div className="animate-pulse">
             <div className="rounded-full bg-slate-300 h-5 mx-1 w-24"></div>
           </div>
         )}
         {isEditing ? (
-          <div className="flex items-center justify-between border-2 rounded-full ">
+          <div className="flex items-center justify-between border-2 rounded-full -ml-2 ">
             <input
-              className="input input-ghost input-sm focus-within:border-transparent focus:outline-none focus:bg-transparent focus:text-gray-500 border font-medium placeholder:text-accent/80 text-gray-500 w-32"
+              className="input input-ghost input-sm focus-within:border-transparent focus:outline-none focus:bg-transparent focus:text-gray-500 border font-medium placeholder:text-accent/80 text-gray-500 w-28"
               placeholder="New Username"
               value={newUsername}
               onChange={e => setNewUsername(e.target.value)}
@@ -83,7 +69,7 @@ const Username = () => {
             </button>
           </div>
         ) : (
-          <span className="ml-2 mr-1">{userName}</span>
+          <span className="mr-1">{userName}</span>
         )}
       </summary>
       {isHomePage && (
