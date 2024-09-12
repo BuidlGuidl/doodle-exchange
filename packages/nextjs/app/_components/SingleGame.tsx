@@ -144,7 +144,7 @@ const SingleGame = () => {
               canvasWidth={calculatedCanvaSize}
               canvasHeight={calculatedCanvaSize}
               brushColor={color}
-              lazyRadius={1}
+              lazyRadius={0}
               brushRadius={3}
               disabled={canvasDisabled}
               hideGrid={true}
