@@ -1,6 +1,8 @@
 import React from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import DrawingsList from "./DrawingsList";
+import { loogieBlo } from "loogie-blo";
 // import { Address } from "~~/components/scaffold-eth";
 import { Game } from "~~/types/game/game";
 
@@ -69,7 +71,14 @@ const Results = ({ game, connectedAddress }: { game: Game; connectedAddress: str
               {playerResults.map((player: any, index) => (
                 <tr key={player.address}>
                   <td>{index}</td>
-                  <td>
+                  <td className="flex w-fit">
+                    <Image
+                      alt={player.address + " loogie"}
+                      src={loogieBlo(player.address as `0x${string}`)}
+                      width={20}
+                      height={20}
+                      className="rounded-full"
+                    />
                     {player.userName} {connectedAddress == player.address ? "(You)" : ""}
                   </td>
                   <td>{player.totalPoints}</td>
