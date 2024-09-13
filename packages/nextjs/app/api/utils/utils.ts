@@ -310,8 +310,8 @@ const getRandomNumber = (min: number, max: number): number => {
 const generateUsername = (): string => {
   const randomAdjective = adjectives[getRandomNumber(0, adjectives.length - 1)];
   const randomNoun = nouns[getRandomNumber(0, nouns.length - 1)];
-  const randomNumber = getRandomNumber(1000, 9999);
-  return `${randomAdjective}${randomNoun}${randomNumber}`;
+  // const randomNumber = getRandomNumber(1000, 9999);
+  return `${randomAdjective}${randomNoun}`;
 };
 
 export const usernameExists = async (username: string): Promise<boolean> => {
@@ -339,12 +339,12 @@ export const fetchOrCreateUsername = async (address: string): Promise<string> =>
       return player.username;
     }
 
-    const uniqueUsername = await generateUniqueUsername();
+    const generatedUsername = await generateUsername();
 
-    player = new PlayerUsernames({ address, username: uniqueUsername });
+    player = new PlayerUsernames({ address, username: generatedUsername });
     await player.save();
 
-    return uniqueUsername;
+    return generatedUsername;
   } catch (error) {
     throw new Error("Error fetching or creating username: " + (error as Error).message);
   }
