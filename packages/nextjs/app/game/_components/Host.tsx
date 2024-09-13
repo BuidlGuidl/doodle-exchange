@@ -87,7 +87,8 @@ const Host = ({
       {game.wordsList.map((word, index) => (
         <h1 key={index} className="flex gap-6 justify-between w-fit items-center">
           <span>
-            Round {index + 1}: {word}
+            Round {index + 1}:{" "}
+            <span className={game?.status === "lobby" || index > game?.currentRound ? "blur-sm" : ""}>{word}</span>
           </span>
         </h1>
       ))}
