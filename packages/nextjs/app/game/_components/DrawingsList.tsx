@@ -1,5 +1,6 @@
 import React, { useMemo } from "react";
 import Image from "next/image";
+import { loogieBlo } from "loogie-blo";
 import { Game } from "~~/types/game/game";
 
 type DrawingListInfo = {
@@ -7,6 +8,8 @@ type DrawingListInfo = {
   drawWord: string;
   gptGuess: string;
   isCorrect: boolean;
+  drawerUsername: string;
+  drawerAddress: string;
 };
 
 function getAllDrawings(game: Game): { [key: string]: DrawingListInfo[] } {
@@ -28,6 +31,8 @@ function getAllDrawings(game: Game): { [key: string]: DrawingListInfo[] } {
               drawWord,
               gptGuess,
               isCorrect: drawWord === gptGuess,
+              drawerAddress: player?.address,
+              drawerUsername: player?.userName,
             });
           }
         });
@@ -55,7 +60,16 @@ const DrawingSection = ({
       {drawings.map((drawingInfo, index) => (
         <div key={index} className="border border-neutral-400">
           <Image src={drawingInfo.drawingLink} alt={`Drawing ${index + 1}`} width={200} height={200} />
-          <p className="text-center my-0">{drawingInfo.gptGuess}</p>
+          <p className="flex justify-center  inline my-0">
+            {drawingInfo.gptGuess}
+            <Image
+              alt={drawingInfo?.drawerAddress + " loogie"}
+              src={loogieBlo(drawingInfo?.drawerAddress as `0x${string}`)}
+              width={25}
+              height={25}
+              className="rounded-full"
+            />
+          </p>
         </div>
       ))}
     </div>

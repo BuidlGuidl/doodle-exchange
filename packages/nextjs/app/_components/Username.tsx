@@ -35,14 +35,14 @@ const Username = () => {
 
   return (
     <div className="flex gap-1 items-center">
-      <summary tabIndex={0} className=" bg-secondary rounded-full btn-sm flex items-center pl-0 pr-2 shadow-md gap-0">
+      <summary tabIndex={0} className="bg-secondary rounded-full btn-sm flex items-center pl-0 pr-2 shadow-md gap-0">
         {address && (
           <Image
             alt={address + " loogie"}
             src={loogieBlo(address as `0x${string}`)}
-            width={60}
-            height={60}
-            className="rounded-full -ml-4"
+            width={30}
+            height={30}
+            className="rounded-full"
           />
         )}
         {userName == "" && (

@@ -58,7 +58,7 @@ const Results = ({ game, connectedAddress }: { game: Game; connectedAddress: str
           </button>
         </div>
         <h1 className="mx-auto text-2xl">Results</h1>
-        <div className="flex flex-col h-36 overflow-y-scroll mx-auto">
+        <div className="flex flex-col mx-auto">
           <table className="table max-w-xs table-zebra shadow-lg">
             <thead>
               <tr>
@@ -69,8 +69,8 @@ const Results = ({ game, connectedAddress }: { game: Game; connectedAddress: str
             </thead>
             <tbody>
               {playerResults.map((player: any, index) => (
-                <tr key={player.address}>
-                  <td>{index}</td>
+                <tr key={player.address} className={player.address === connectedAddress ? "bg-base-300" : ""}>
+                  <td>{index + 1}</td>
                   <td className="flex w-fit">
                     <Image
                       alt={player.address + " loogie"}
@@ -79,7 +79,7 @@ const Results = ({ game, connectedAddress }: { game: Game; connectedAddress: str
                       height={20}
                       className="rounded-full"
                     />
-                    {player.userName} {connectedAddress == player.address ? "(You)" : ""}
+                    {player.userName}
                   </td>
                   <td>{player.totalPoints}</td>
                 </tr>
