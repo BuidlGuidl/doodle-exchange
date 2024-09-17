@@ -4,7 +4,6 @@ import QRCode from "qrcode.react";
 import { UserIcon } from "@heroicons/react/24/outline";
 import CopyButton from "~~/app/_components/CopyButton";
 import UserCard from "~~/app/_components/UserCard";
-// import { Address } from "~~/components/scaffold-eth";
 import { Game } from "~~/types/game/game";
 import { updateGameStatus } from "~~/utils/doodleExchange/api/apiUtils";
 
@@ -80,33 +79,30 @@ const Host = ({
           <>
             <h1>Game Words</h1>
             {game.wordsList.map((word, index) => (
-              <h1 key={index} className="flex gap-6 justify-between w-fit items-center">
-                <span>
-                  Round {index + 1}:{" "}
-                  <span className={game?.status === "lobby" || index > game?.currentRound ? "blur-sm" : ""}>
-                    {word}
+              <h1 key={index} className="flex justify-center w-full items-center">
+                <span className="w-20">Round {index + 1}: </span>
+                <span className={game?.status === "lobby" || index > game?.currentRound ? "blur-sm" : ""}>{word}</span>
+              </h1>
+            ))}
+            <div className="flex flex-col gap-x-3 gap-y-2 mx-auto items-end mt-5">
+              {game.players.map(player => (
+                <div key={player.address} className="flex gap-x-3 items-center">
+                  <span className="flex">
+                    <UserCard
+                      address={player?.address}
+                      username={player?.userName}
+                      className="bg-secondary rounded-full btn-sm flex items-center my-0 shadow-md gap-0"
+                    />
                   </span>
-                </span>
-              </h1>
-            ))}
-            <div className="mb-5"></div>
-            {game.players.map(player => (
-              <h1 key={player.address} className="flex gap-6 justify-between w-fit items-center">
-                <span className="flex">
-                  <UserCard
-                    address={player?.address}
-                    username={player?.userName}
-                    className="bg-secondary rounded-full btn-sm flex items-center pl-0 my-0 pr-2 shadow-md gap-0"
-                  />
-                </span>
-                <span className="w-24"> {player.status}</span>
-                <span>Round: {player.currentRound + 1}</span>
-              </h1>
-            ))}
+                  <span className="w-20"> {player.status}</span>
+                  <span>Round: {player.currentRound + 1}</span>
+                </div>
+              ))}
+            </div>
           </>
         )}
       </div>
-      <div className="px-10">
+      <div className="px-10 mt-5">
         <DrawingsList game={game} />
       </div>
     </div>
