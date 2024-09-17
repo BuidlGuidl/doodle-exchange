@@ -130,6 +130,7 @@ const SingleGame = () => {
               <button
                 className="btn btn-sm btn-secondary"
                 onClick={() => {
+                  drawingCanvas?.current?.clear();
                   fetchWord();
                 }}
               >
