@@ -9,6 +9,8 @@ import Player from "../_components/Player";
 import Results from "../_components/Results";
 import RoundCountdown from "../_components/RoundCountdown";
 import { useChannel } from "ably/react";
+import { AnimatePresence } from "framer-motion";
+import { motion as m } from "framer-motion";
 import { useAccount } from "wagmi";
 import useGameData from "~~/hooks/doodleExchange/useGameData";
 import { Game, Player as playerType } from "~~/types/game/game";
@@ -28,7 +30,8 @@ const GamePage = () => {
   const [token, setToken] = useState("");
   const [isUpdatingRound, setIsUpdatingRound] = useState(false);
   const [countdown, setCountdown] = useState(20);
-  const [showCountdownOverlay, setShowCountdownOverlay] = useState(false);
+  const [showCountdown, setShowCountdown] = useState(false);
+  const [pauseAtRoundsEnd, setPauseAtRoundsEnd] = useState(false);
 
   useChannel("gameUpdate", message => {
     console.log(message);
@@ -44,7 +47,7 @@ const GamePage = () => {
   useChannel("startResumeGame", message => {
     console.log(message);
     if (game?._id === message.data._id) {
-      setShowCountdownOverlay(true);
+      setShowCountdown(true);
     }
   });
 
@@ -73,13 +76,14 @@ const GamePage = () => {
 
       setTimeout(async () => {
         if (isHost && game) {
-          await updateGameRound(game._id, token);
+          await updateGameRound(game._id, token, pauseAtRoundsEnd);
+          setPauseAtRoundsEnd(false);
         }
         setIsUpdatingRound(false);
         setCountdown(20);
         clearInterval(interval);
         if (game && game?.currentRound < game?.totalRounds - 1) {
-          setShowCountdownOverlay(true);
+          setShowCountdown(true);
         }
       }, 20000);
     }
@@ -135,28 +139,52 @@ const GamePage = () => {
   };
 
   const handleCountdownEnd = () => {
-    setShowCountdownOverlay(false); // Hide the overlay after countdown ends
+    setShowCountdown(false); // Hide the overlay after countdown ends
   };
 
   if (game?.status === "finished") {
     return <Results game={game as Game} connectedAddress={connectedAddress || ""} />;
   } else if (isHost && game) {
-    return <Host game={game as Game} token={token} isUpdatingRound={isUpdatingRound} countdown={countdown} />;
+    return (
+      <Host
+        game={game as Game}
+        token={token}
+        isUpdatingRound={isUpdatingRound}
+        countdown={countdown}
+        showCountdown={showCountdown}
+        setShowCountdown={setShowCountdown}
+        pauseAtRoundsEnd={pauseAtRoundsEnd}
+        setPauseAtRoundsEnd={setPauseAtRoundsEnd}
+      />
+    );
   } else if (isPlayer && game && game?.status === "lobby") {
     return <Lobby game={game as Game} connectedAddress={connectedAddress || ""} />;
   } else if (isPlayer && game) {
     return (
-      <>
-        <Player
-          game={game as Game}
-          moveToNextRound={moveToNextRound}
-          player={player as playerType}
-          isUpdatingRound={isUpdatingRound}
-          countdown={countdown}
-          token={token}
-        />
-        {showCountdownOverlay && <RoundCountdown onCountdownEnd={handleCountdownEnd} />}
-      </>
+      <AnimatePresence initial={false}>
+        {showCountdown && game.status == "ongoing" ? (
+          <RoundCountdown game={game} onCountdownEnd={handleCountdownEnd} />
+        ) : game.status == "paused" ? (
+          <m.div
+            initial={{ y: "100%" }}
+            animate={{ y: "0%" }}
+            exit={{ opacity: 1 }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+            className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30 z-50 text-7xl text-white"
+          >
+            Game has been paused
+          </m.div>
+        ) : (
+          <Player
+            game={game as Game}
+            moveToNextRound={moveToNextRound}
+            player={player as playerType}
+            isUpdatingRound={isUpdatingRound}
+            countdown={countdown}
+            token={token}
+          />
+        )}
+      </AnimatePresence>
     );
   } else {
     return (

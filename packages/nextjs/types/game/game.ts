@@ -7,6 +7,17 @@ export interface Round {
   drawings: string[];
 }
 
+export interface Drawings {
+  link: string;
+  isCorrect: boolean;
+  address: string;
+  userName: string;
+  round: number;
+  timeStamp: number;
+  drawWord: string;
+  gptGuess: string;
+}
+
 export interface Player {
   address: string;
   userName: string;
@@ -27,6 +38,7 @@ export interface Game {
   wordsList: string[];
   totalRounds: number;
   currentRound: number;
+  drawings: Drawings[];
 }
 
 export interface CanvasDrawLines extends CanvasDraw {

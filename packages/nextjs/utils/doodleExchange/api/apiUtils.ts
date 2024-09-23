@@ -87,14 +87,14 @@ export const updatePlayerRound = async (id: string, token: string, address: stri
   }
 };
 
-export const updateGameRound = async (id: string, token: string) => {
+export const updateGameRound = async (id: string, token: string, pause: boolean) => {
   const response = await fetch("/api/host/updategameround", {
     method: "PATCH",
     headers: {
       Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ id: id }),
+    body: JSON.stringify({ id: id, pause: pause }),
   });
 
   const updatedGame = await response.json();

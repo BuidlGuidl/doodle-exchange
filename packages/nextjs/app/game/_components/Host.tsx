@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
 import DrawingsList from "./DrawingsList";
 import QRCode from "qrcode.react";
 import { UserIcon } from "@heroicons/react/24/outline";
@@ -12,11 +12,17 @@ const Host = ({
   token,
   isUpdatingRound,
   countdown,
+  pauseAtRoundsEnd,
+  setPauseAtRoundsEnd,
 }: {
   game: Game;
   token: string;
   isUpdatingRound: boolean;
   countdown: number;
+  showCountdown: boolean;
+  setShowCountdown: Dispatch<SetStateAction<boolean>>;
+  pauseAtRoundsEnd: boolean;
+  setPauseAtRoundsEnd: Dispatch<SetStateAction<boolean>>;
 }) => {
   const [inviteUrl, setInviteUrl] = useState("");
 
@@ -29,10 +35,10 @@ const Host = ({
   }, []);
 
   return (
-    <div className="p-6">
+    <div className="p-6 flex flex-col items-center">
       <div className="flex flex-col items-center justify-center">
         <h1 className="text-3xl">Host</h1>
-        <div className="flex justify-center bg-base-200 mt-2 rounded-md">
+        <div className="flex justify-center bg-base-200 mt-2 rounded-md p-4">
           <div className="flex flex-col items-end mr-5">
             <span className="flex">
               Copy Invite Url <CopyButton textToCopy={inviteUrl} />
@@ -47,11 +53,28 @@ const Host = ({
           </div>
           <div className="flex mt-2"></div>
         </div>
-        <div className="h-6">
-          {isUpdatingRound &&
-            (game.currentRound === game.totalRounds - 1
-              ? `Ending the game in ${countdown} Seconds`
-              : `This round ends in ${countdown} Seconds`)}
+        <div className="fixed bottom-0 right-5 flex flex-col items-end">
+          <div className="h-6 ">
+            {isUpdatingRound &&
+              (game.currentRound === game.totalRounds - 1
+                ? `Ending the game in ${countdown} Seconds`
+                : `This round ends in ${countdown} Seconds`)}
+          </div>
+          <button
+            className="btn btn-sm btn-primary my-4 w-fit "
+            onClick={() => {
+              game.status === "paused" ? updateGameStatus(game._id, "ongoing", token) : setPauseAtRoundsEnd(true);
+            }}
+            disabled={pauseAtRoundsEnd}
+          >
+            {game.status === "paused" ? (
+              "Resume"
+            ) : (
+              <span className="flex items-center">
+                {pauseAtRoundsEnd && <span className="loading mr-1" />}Pause at round&apos;s end
+              </span>
+            )}
+          </button>
         </div>
         {game?.status === "lobby" ? (
           <>

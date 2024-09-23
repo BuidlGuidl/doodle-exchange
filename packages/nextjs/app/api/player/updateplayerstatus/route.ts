@@ -41,6 +41,21 @@ export const PATCH = async (request: Request) => {
     }
 
     if (drawing) {
+      const [drawWordRaw, gptGuessRaw] = drawing.split("%2F");
+      const drawWord = drawWordRaw.split("/o/")[1].toLowerCase();
+      const gptGuess = gptGuessRaw.toLowerCase();
+
+      game.drawings.push({
+        link: drawing,
+        isCorrect: drawWord == gptGuess,
+        address: player.address,
+        userName: player.userName,
+        round: player.currentRound,
+        timeStamp: Date.now(),
+        drawWord,
+        gptGuess,
+      });
+
       player.rounds[player.currentRound].drawings.push(drawing);
     }
 
