@@ -3,26 +3,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import DrawingsList from "./DrawingsList";
 import { loogieBlo } from "loogie-blo";
-// import { Address } from "~~/components/scaffold-eth";
 import { Game } from "~~/types/game/game";
-
-// const getFinalResults = (game: Game) => {
-//   const playersScore = new Map();
-//   game?.players.forEach(player => {
-//     playersScore.set(player?.address, 0);
-//   });
-//   game?.winners.forEach(winners => {
-//     winners.forEach((winner, index) => {
-//       if (playersScore.has(winner)) {
-//         const newScore = index == 0 ? 3 : 1;
-//         playersScore.set(winner, playersScore.get(winner) + newScore);
-//       } else {
-//         playersScore.set(winner, index == 0 ? 3 : 1);
-//       }
-//     });
-//   });
-//   return playersScore;
-// };
 
 function getPlayersResults(game: Game): { address: string; userName: string; totalPoints: number }[] {
   return game.players
@@ -45,8 +26,8 @@ const Results = ({ game, connectedAddress }: { game: Game; connectedAddress: str
   console.log(playerResults);
 
   return (
-    <div className="p-6">
-      <div className="flex flex-col justify-center">
+    <div className="flex p-6 items-center md:items-start md:justify-center md:flex-row flex-col gap-10 ">
+      <div className="flex flex-col">
         <div className="mx-auto mb-5">
           <button
             className="btn btn-sm btn-primary"
@@ -87,9 +68,8 @@ const Results = ({ game, connectedAddress }: { game: Game; connectedAddress: str
             </tbody>
           </table>
         </div>
-
-        <DrawingsList game={game} />
       </div>
+      <DrawingsList game={game} />
     </div>
   );
 };

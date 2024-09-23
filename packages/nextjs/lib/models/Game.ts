@@ -48,6 +48,21 @@ const gameSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    drawings: {
+      type: [
+        {
+          link: { type: String, required: true },
+          isCorrect: { type: Boolean },
+          address: { type: String },
+          userName: { type: String },
+          round: { type: Number },
+          timeStamp: { type: Number },
+          drawWord: { type: String },
+          gptGuess: { type: String },
+        },
+      ],
+      default: [],
+    },
   },
   { timestamps: true },
 );
