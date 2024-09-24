@@ -111,8 +111,8 @@ const Player = ({
       initial={{ y: "100%" }}
       animate={{ y: "0%" }}
       exit={{ opacity: 1 }}
-      transition={{ duration: 0.5, ease: "easeOut" }}
-      className="flex items-center flex-col flex-grow pt-3 min-h-screen"
+      transition={{ duration: 0.2, ease: "easeOut" }}
+      className="flex items-center flex-col flex-grow min-h-screen p-6"
     >
       {finalDrawing ? (
         <>

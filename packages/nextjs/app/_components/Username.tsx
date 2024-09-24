@@ -58,7 +58,7 @@ const Username = () => {
               value={newUsername}
               onChange={e => setNewUsername(e.target.value)}
             />
-            <button className="btn btn-sm btn-ghost">
+            <button className="btn btn-sm btn-ghost -mr-2">
               <XMarkIcon
                 className="h-4 w-4 cursor-pointer"
                 onClick={() => {
