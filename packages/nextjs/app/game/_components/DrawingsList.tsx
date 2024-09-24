@@ -126,7 +126,7 @@ const DrawingsList = ({ game }: { game: Game }) => {
   // );
 
   return (
-    <div className="flex flex-col gap-4 items-center h-[80vh] max-w-md py-4 overflow-y-auto ">
+    <div className="flex flex-col gap-4 items-center h-[75vh] max-w-md py-4 overflow-y-auto">
       {game &&
         game.drawings &&
         game.drawings
@@ -153,7 +153,7 @@ const DrawingsList = ({ game }: { game: Game }) => {
                   )}
                 </div>
                 <Image src={drawing.link} alt={`Drawing`} width={200} height={200} />
-                <div className="flex justify-between w-full mx-6">
+                <div className="flex justify-between w-full mx-6 items-center">
                   <Image
                     alt={drawing.address + " loogie"}
                     src={loogieBlo(drawing.address as `0x${string}`)}
