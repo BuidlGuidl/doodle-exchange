@@ -9,8 +9,10 @@ import { useAccount } from "wagmi";
 import { ArrowUturnLeftIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { getGpt4oClassify } from "~~/app/classify";
 import { CanvasDrawLines, Game, Player as playerType } from "~~/types/game/game";
+import { EMPTY_DRAWING } from "~~/utils/constants";
 import { updatePlayerStatus } from "~~/utils/doodleExchange/api/apiUtils";
 import { isGuessCorrect, makeConfetti } from "~~/utils/doodleExchange/helpersClient";
+import { notification } from "~~/utils/scaffold-eth";
 import { uploadToFirebase } from "~~/utils/uploadToFirebase";
 
 const Player = ({
@@ -61,6 +63,11 @@ const Player = ({
   const handleSubmit = async () => {
     setCanvasDisabled(true);
     const drawingDataUrl = drawingCanvas.current?.canvas.drawing.toDataURL() || "";
+    if (drawingDataUrl === EMPTY_DRAWING) {
+      notification.warning("Your drawing seems to be empty.");
+      setCanvasDisabled(false);
+      return;
+    }
     updatePlayerStatus(game._id, "classifying", token, connectedAddress || "");
     setFinalDrawing(drawingDataUrl);
     console.log(drawingDataUrl);
