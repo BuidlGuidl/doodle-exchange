@@ -8,7 +8,7 @@ import Lobby from "../_components/Lobby";
 import Player from "../_components/Player";
 import Results from "../_components/Results";
 import RoundCountdown from "../_components/RoundCountdown";
-import { useChannel } from "ably/react";
+import { useAbly, useChannel } from "ably/react";
 import { AnimatePresence } from "framer-motion";
 import { motion as m } from "framer-motion";
 import { useAccount } from "wagmi";
@@ -22,6 +22,7 @@ const GamePage = () => {
   const { updateGameState, updatePlayerState, loadToken } = useGameData();
   const { address: connectedAddress } = useAccount();
   const router = useRouter();
+  const client = useAbly();
 
   const [isHost, setIsHost] = useState(false);
   const [isPlayer, setIsPlayer] = useState(false);
@@ -36,6 +37,10 @@ const GamePage = () => {
   useChannel("gameUpdate", message => {
     console.log(message);
     if (game?._id === message.data._id) {
+      if (message.data?.status === "finished") {
+        client.close();
+        router.push(`/results/${game?.inviteCode}`);
+      }
       const player = message.data.players.find((player: playerType) => player.address === connectedAddress);
       setPlayer(player);
       if (player) updatePlayerState(JSON.stringify(player));
@@ -143,6 +148,7 @@ const GamePage = () => {
   };
 
   if (game?.status === "finished") {
+    client.close();
     return <Results game={game as Game} connectedAddress={connectedAddress || ""} />;
   } else if (isHost && game) {
     return (
