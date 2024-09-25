@@ -38,22 +38,26 @@ const Host = ({
   return (
     <div className="p-6 flex flex-col items-center overflow-hidden max-w-3xl mx-auto">
       <div className="flex flex-col items-center justify-center">
-        <h1 className="text-3xl">Host</h1>
-        <div className="flex justify-center bg-base-200 mt-2 rounded-md p-4">
-          <div className="flex flex-col items-end mr-5">
-            <span className="flex">
-              Copy Invite Url <CopyButton textToCopy={inviteUrl} />
-            </span>
-            <span className="flex">Rounds: {game?.totalRounds}</span>
-            <span className="flex text-sky-600 text-xl items-center ">
-              <UserIcon className="text-sky-600 h-5 w-5 justify-center items-center" />: {game.players.length}
-            </span>
-          </div>
-          <div>
-            <QRCode value={inviteUrl?.toString() || ""} className="" level="H" renderAs="svg" />
-          </div>
-          <div className="flex mt-2"></div>
-        </div>
+        {game?.status === "lobby" && (
+          <>
+            <h1 className="text-3xl">Host</h1>
+            <div className="flex justify-center bg-base-200 mt-2 rounded-md p-4">
+              <div className="flex flex-col items-end mr-5">
+                <span className="flex">
+                  Copy Invite Url <CopyButton textToCopy={inviteUrl} />
+                </span>
+                <span className="flex">Rounds: {game?.totalRounds}</span>
+                <span className="flex text-sky-600 text-xl items-center ">
+                  <UserIcon className="text-sky-600 h-5 w-5 justify-center items-center" />: {game.players.length}
+                </span>
+              </div>
+              <div>
+                <QRCode value={inviteUrl?.toString() || ""} className="" level="H" renderAs="svg" />
+              </div>
+              <div className="flex mt-2"></div>
+            </div>
+          </>
+        )}
         <div className="fixed bottom-0 right-5 flex flex-col items-end">
           <div className="h-6 ">
             {isUpdatingRound &&
@@ -105,7 +109,7 @@ const Host = ({
           </>
         ) : (
           <>
-            <h1>Game Word</h1>
+            <h1 className="text-3xl">Game Word</h1>
             <h1 className="flex justify-center w-full items-center">
               <span className="w-20">Round {game.currentRound + 1}: </span>
               <span className="">{game.wordsList[game.currentRound]}</span>
