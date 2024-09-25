@@ -37,10 +37,6 @@ const GamePage = () => {
   useChannel("gameUpdate", message => {
     console.log(message);
     if (game?._id === message.data._id) {
-      if (message.data?.status === "finished") {
-        client.close();
-        router.push(`/results/${game?.inviteCode}`);
-      }
       const player = message.data.players.find((player: playerType) => player.address === connectedAddress);
       setPlayer(player);
       if (player) updatePlayerState(JSON.stringify(player));
