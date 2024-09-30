@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { generateUniqueUsername, usernameExists } from "../../utils/utils";
+// import { generateUniqueUsername, usernameExists,  } from "../../utils/utils";
+import { generateUsername } from "../../utils/utils";
 import connectdb from "~~/lib/db";
 import PlayerUsernames from "~~/lib/models/PlayerUsernames";
 
@@ -21,11 +22,12 @@ export const POST = async (request: Request) => {
       });
     }
 
-    const uniqueUsername = await generateUniqueUsername();
-    player = new PlayerUsernames({ address, username: uniqueUsername });
+    // const uniqueUsername = await generateUniqueUsername();
+    const username = generateUsername();
+    player = new PlayerUsernames({ address, username: username });
     await player.save();
 
-    return new NextResponse(JSON.stringify({ message: "Username created", username: uniqueUsername }), { status: 201 });
+    return new NextResponse(JSON.stringify({ message: "Username created", username: username }), { status: 201 });
   } catch (error) {
     return new NextResponse(
       JSON.stringify({
@@ -55,9 +57,9 @@ export const PATCH = async (request: Request) => {
       return new NextResponse(JSON.stringify({ error: "Player not found" }), { status: 404 });
     }
 
-    if (await usernameExists(newUsername)) {
-      return new NextResponse(JSON.stringify({ error: "Username already exists" }), { status: 409 });
-    }
+    // if (await usernameExists(newUsername)) {
+    //   return new NextResponse(JSON.stringify({ error: "Username already exists" }), { status: 409 });
+    // }
 
     existingUser.username = newUsername;
     await existingUser.save();

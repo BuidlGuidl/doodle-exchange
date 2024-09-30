@@ -35,7 +35,6 @@ const GamePage = () => {
   const [pauseAtRoundsEnd, setPauseAtRoundsEnd] = useState(false);
 
   useChannel("gameUpdate", message => {
-    console.log(message);
     if (game?._id === message.data._id) {
       const player = message.data.players.find((player: playerType) => player.address === connectedAddress);
       setPlayer(player);
@@ -46,14 +45,12 @@ const GamePage = () => {
   });
 
   useChannel("startResumeGame", message => {
-    console.log(message);
     if (game?._id === message.data._id) {
       setShowCountdown(true);
     }
   });
 
   useChannel("playerUpdate", message => {
-    console.log(message);
     if (player?._id === message.data._id) {
       updatePlayerState(JSON.stringify(message.data));
       setPlayer(message.data);
@@ -61,7 +58,7 @@ const GamePage = () => {
   });
 
   useChannel("updateRound", message => {
-    console.log(message);
+    console.log("updating round", isUpdatingRound);
     if (isUpdatingRound) return;
     if (game?._id === message.data._id) {
       setIsUpdatingRound(true);
@@ -75,6 +72,12 @@ const GamePage = () => {
         setCountdown(oldCount => (oldCount <= 1 ? 0 : oldCount - 1));
       }, 1000);
 
+      setTimeout(() => {
+        if (game && game?.currentRound < game?.totalRounds - 1) {
+          setShowCountdown(true);
+        }
+      }, 22000);
+
       setTimeout(async () => {
         if (isHost && game) {
           await updateGameRound(game._id, token, pauseAtRoundsEnd);
@@ -83,10 +86,7 @@ const GamePage = () => {
         setIsUpdatingRound(false);
         setCountdown(20);
         clearInterval(interval);
-        if (game && game?.currentRound < game?.totalRounds - 1) {
-          setShowCountdown(true);
-        }
-      }, 20000);
+      }, 26000);
     }
   });
 
@@ -154,7 +154,6 @@ const GamePage = () => {
         isUpdatingRound={isUpdatingRound}
         countdown={countdown}
         showCountdown={showCountdown}
-        setShowCountdown={setShowCountdown}
         pauseAtRoundsEnd={pauseAtRoundsEnd}
         setPauseAtRoundsEnd={setPauseAtRoundsEnd}
       />
