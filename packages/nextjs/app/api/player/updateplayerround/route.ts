@@ -32,9 +32,15 @@ export const PATCH = async (request: Request) => {
       return new NextResponse(JSON.stringify({ error: "You are ahead of the current game round" }), { status: 403 });
     }
 
+    const anyPlayerAhead = game.players.some((p: Player) => p.currentRound > game.currentRound);
     const currentPlayerRound = player.currentRound;
     const isFinalRound = player.currentRound === game.totalRounds - 1;
     const isCurrentRound = currentPlayerRound === game.currentRound;
+    const finalRound = game.totalRounds - 1;
+    const anyPlayerHasWonFinalRound = game.players.some((p: Player) => {
+      const finalRoundEntry = p.rounds.find((r: any) => r.round === finalRound);
+      return finalRoundEntry && finalRoundEntry.won;
+    });
 
     // Find or create the current round entry
     let roundEntry = player.rounds.find((r: any) => r.round === currentPlayerRound);
@@ -55,7 +61,7 @@ export const PATCH = async (request: Request) => {
     }
     game.winners[currentPlayerRound].push(address);
 
-    if (isFinalRound || isCurrentRound) {
+    if ((isCurrentRound && !anyPlayerAhead) || (isFinalRound && !anyPlayerHasWonFinalRound)) {
       const roundChannel = ablyRealtime.channels.get("updateRound");
       await roundChannel.publish("updateRound", game);
     }
@@ -71,7 +77,7 @@ export const PATCH = async (request: Request) => {
 
     const gameChannel = ablyRealtime.channels.get("gameUpdate");
     const playerChannel = ablyRealtime.channels.get("playerUpdate");
-    await gameChannel.publish("gameUpdate", updatedGame);
+    if (!anyPlayerAhead) await gameChannel.publish("gameUpdate", updatedGame);
     await playerChannel.publish("playerUpdate", player);
 
     return new NextResponse(

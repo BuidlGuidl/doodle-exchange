@@ -21,7 +21,6 @@ const Host = ({
   isUpdatingRound: boolean;
   countdown: number;
   showCountdown: boolean;
-  setShowCountdown: Dispatch<SetStateAction<boolean>>;
   pauseAtRoundsEnd: boolean;
   setPauseAtRoundsEnd: Dispatch<SetStateAction<boolean>>;
 }) => {

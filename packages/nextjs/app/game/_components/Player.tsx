@@ -194,7 +194,7 @@ const Player = ({
               <button
                 className="btn btn-block btn-primary"
                 onClick={handleSubmit}
-                disabled={game.currentRound !== player.currentRound}
+                disabled={game.currentRound !== player.currentRound || countdown == 0}
               >
                 Submit
               </button>
