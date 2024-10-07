@@ -134,7 +134,7 @@ const GamePage = () => {
   }, [connectedAddress, id]);
 
   useEffect(() => {
-    const loadGame = async () => {
+    const refreshGame = async () => {
       const response = await fetch(`/api/game/${id}`, {
         method: "GET",
         headers: {
@@ -156,7 +156,7 @@ const GamePage = () => {
     };
 
     const interval = setInterval(() => {
-      loadGame();
+      refreshGame();
     }, 5000);
     return () => clearInterval(interval);
   }, [id]);
