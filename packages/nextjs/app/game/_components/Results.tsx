@@ -20,10 +20,7 @@ function getPlayersResults(game: Game): { address: string; userName: string; tot
 const Results = ({ game, connectedAddress }: { game: Game; connectedAddress: string }) => {
   const router = useRouter();
 
-  // const playersScore = getFinalResults(game);
   const playerResults = getPlayersResults(game);
-
-  console.log(playerResults);
 
   return (
     <div className="flex p-6 items-center md:items-start md:justify-center md:flex-row flex-col gap-10 ">

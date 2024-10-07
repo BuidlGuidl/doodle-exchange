@@ -41,6 +41,7 @@
     "react-copy-to-clipboard": "^5.1.0",
     "react-dom": "^18.2.0",
     "react-hot-toast": "^2.4.0",
+    "react-qr-reader": "2.2.1",
     "use-debounce": "^8.0.4",
     "usehooks-ts": "2.16.0",
     "viem": "2.17.4",

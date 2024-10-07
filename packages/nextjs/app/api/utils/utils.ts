@@ -310,7 +310,6 @@ const getRandomNumber = (min: number, max: number): number => {
 export const generateUsername = (): string => {
   const randomAdjective = adjectives[getRandomNumber(0, adjectives.length - 1)];
   const randomNoun = nouns[getRandomNumber(0, nouns.length - 1)];
-  // const randomNumber = getRandomNumber(1000, 9999);
   return `${randomAdjective}${randomNoun}`;
 };
 

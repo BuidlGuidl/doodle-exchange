@@ -4,7 +4,6 @@ import { usePathname } from "next/navigation";
 import { loogieBlo } from "loogie-blo";
 import { useAccount } from "wagmi";
 import { CheckIcon, PencilIcon, XMarkIcon } from "@heroicons/react/24/outline";
-// import { BlockieAvatar } from "~~/components/scaffold-eth";
 import { createUsername, editUsername } from "~~/utils/doodleExchange/api/apiUtils";
 
 const Username = () => {

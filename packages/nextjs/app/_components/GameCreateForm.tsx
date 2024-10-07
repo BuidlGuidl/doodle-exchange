@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
+import { QrCodeReader } from "./QrCodeReader";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import { gameDifficultyButtons } from "~~/types/utils";
 import { WORDS } from "~~/utils/constants";
@@ -112,14 +113,17 @@ const GameCreationForm = ({ connectedAddress }: { connectedAddress: string }) =>
 
         <br />
         {connectedAddress ? (
-          <button
-            type="submit"
-            className="btn btn-sm btn-primary -mt-2"
-            disabled={loading || !connectedAddress || (selectedDifficulty === "custom" && selectedWords.length === 0)}
-          >
-            {loading && <span className="loading loading-spinner"></span>}
-            Start Game
-          </button>
+          <div className="flex justify-between -mt-2 items-center">
+            <button
+              type="submit"
+              className="btn btn-sm btn-primary"
+              disabled={loading || !connectedAddress || (selectedDifficulty === "custom" && selectedWords.length === 0)}
+            >
+              {loading && <span className="loading loading-spinner"></span>}
+              Start Game
+            </button>
+            <QrCodeReader />
+          </div>
         ) : (
           <div className="animate-pulse flex space-x-4">
             <div className="rounded-full bg-slate-300 h-8 w-24 mt-4"></div>

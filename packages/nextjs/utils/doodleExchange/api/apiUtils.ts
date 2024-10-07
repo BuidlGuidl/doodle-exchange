@@ -81,7 +81,6 @@ export const updatePlayerRound = async (id: string, token: string, address: stri
   const updatedGame = await response.json();
 
   if (updatedGame.error) {
-    // notification.error(updatedGame.error);
     console.log(updatedGame.error);
     return;
   }
@@ -127,7 +126,6 @@ export const updatePlayerStatus = async (
   const updatedGame = await response.json();
 
   if (updatedGame.error) {
-    // notification.error(updatedGame.error);
     console.log(updatedGame.error);
     return;
   }
