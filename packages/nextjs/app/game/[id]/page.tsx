@@ -58,7 +58,6 @@ const GamePage = () => {
   });
 
   useChannel("updateRound", message => {
-    console.log("updating round", isUpdatingRound);
     if (isUpdatingRound) return;
     if (game?._id === message.data._id) {
       setIsUpdatingRound(true);
@@ -125,7 +124,6 @@ const GamePage = () => {
             setIsPlayer(true);
           } else {
             router.push(`/`);
-            // notification.error(data.error);
           }
         }
       }
@@ -134,6 +132,34 @@ const GamePage = () => {
     loadGame();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [connectedAddress, id]);
+
+  useEffect(() => {
+    const loadGame = async () => {
+      const response = await fetch(`/api/game/${id}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      const responseData = await response.json();
+      if (responseData.error) {
+        console.log(responseData.error);
+        return;
+      } else {
+        setGame(responseData);
+        if (responseData.players.some((player: playerType) => player.address === connectedAddress)) {
+          const player = responseData.players.find((player: playerType) => player.address === connectedAddress);
+          setPlayer(player);
+        }
+      }
+    };
+
+    const interval = setInterval(() => {
+      loadGame();
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [id]);
 
   const moveToNextRound = async (address: string, won: boolean) => {
     if (game) await updatePlayerRound(game._id, token, address, won);

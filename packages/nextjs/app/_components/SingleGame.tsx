@@ -51,7 +51,6 @@ const SingleGame = () => {
     setCanvasDisabled(true);
     const drawingDataUrl = drawingCanvas.current?.canvas.drawing.toDataURL() || "";
     setFinalDrawing(drawingDataUrl);
-    console.log(drawingDataUrl);
     const response = await getGpt4oClassify(drawingCanvas?.current?.canvas.drawing.toDataURL());
     if (response?.answer) {
       if (isGuessCorrect(response.answer, drawWord)) {
