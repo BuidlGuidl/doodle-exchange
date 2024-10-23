@@ -37,7 +37,7 @@ export const PATCH = async (request: Request) => {
       });
     }
 
-    if (game.currentRound > 0) {
+    if (game.currentRound > 0 && game.status === "ongoing") {
       return new NextResponse(JSON.stringify({ error: "Game has already started" }), { status: 403 });
     }
 

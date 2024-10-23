@@ -14,7 +14,7 @@ import { motion as m } from "framer-motion";
 import { useAccount } from "wagmi";
 import useGameData from "~~/hooks/doodleExchange/useGameData";
 import { Game, Player as playerType } from "~~/types/game/game";
-import { joinGame, updateGameRound, updatePlayerRound } from "~~/utils/doodleExchange/api/apiUtils";
+import { joinGame, updateGameRound, updateGameStatus, updatePlayerRound } from "~~/utils/doodleExchange/api/apiUtils";
 import { notification } from "~~/utils/scaffold-eth";
 
 const GamePage = () => {
@@ -33,6 +33,8 @@ const GamePage = () => {
   const [countdown, setCountdown] = useState(20);
   const [showCountdown, setShowCountdown] = useState(false);
   const [pauseAtRoundsEnd, setPauseAtRoundsEnd] = useState(false);
+  const [timeout, setTimeOut] = useState(60);
+  // const [isTimingout, setIsTimingout] = useState(false);
 
   useChannel("gameUpdate", message => {
     if (game?._id === message.data._id) {
@@ -78,16 +80,50 @@ const GamePage = () => {
       }, 22000);
 
       setTimeout(async () => {
-        if (isHost && game) {
-          await updateGameRound(game._id, token, pauseAtRoundsEnd);
+        if (game) {
+          if (isHost && pauseAtRoundsEnd) {
+            await updateGameStatus(game._id, "paused", token);
+          }
+          await updateGameRound(game._id, token, game.currentRound + 1);
           setPauseAtRoundsEnd(false);
         }
         setIsUpdatingRound(false);
         setCountdown(20);
+        setTimeOut(60);
+        // setIsTimingout(false);
         clearInterval(interval);
       }, 26000);
     }
   });
+
+  // useEffect(() => {
+  //   if (isUpdatingRound) {
+
+  //   }
+  //   if (isTimingout) return;
+  //   if (game?.status !== "ongoing") return;
+
+  //   setIsTimingout(true);
+  //   const interval = setInterval(() => {
+  //     setTimeOut(oldCount => (oldCount <= 1 ? 0 : oldCount - 1));
+  //   }, 1000);
+
+  //   setTimeout(async () => {
+  //     if (game) {
+  //       await updateGameRound(game._id, token, pauseAtRoundsEnd, game.currentRound + 1);
+  //       setPauseAtRoundsEnd(false);
+  //     }
+  //     setIsUpdatingRound(false);
+  //     setCountdown(20);
+  //     setTimeOut(60);
+  //     setIsTimingout(false);
+  //     clearInterval(interval);
+  //   }, 60000);
+
+  //   notification.info(
+  //     game?.currentRound == (game?.totalRounds as number) - 1 ? `Timeout: Ending game ` : `Timeout: Next round begins`,
+  //   );
+  // }, [game, isUpdatingRound]);
 
   useEffect(() => {
     const loadGame = async () => {
@@ -170,7 +206,7 @@ const GamePage = () => {
   };
 
   if (game?.status === "finished") {
-    client.close();
+    if (!client.connection) client.close();
     return <Results game={game as Game} connectedAddress={connectedAddress || ""} />;
   } else if (isHost && game) {
     return (
@@ -182,6 +218,7 @@ const GamePage = () => {
         showCountdown={showCountdown}
         pauseAtRoundsEnd={pauseAtRoundsEnd}
         setPauseAtRoundsEnd={setPauseAtRoundsEnd}
+        timeout={timeout}
       />
     );
   } else if (isPlayer && game && game?.status === "lobby") {

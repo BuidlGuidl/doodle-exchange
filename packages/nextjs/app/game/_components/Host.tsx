@@ -15,6 +15,7 @@ const Host = ({
   countdown,
   pauseAtRoundsEnd,
   setPauseAtRoundsEnd,
+  timeout,
 }: {
   game: Game;
   token: string;
@@ -23,6 +24,7 @@ const Host = ({
   showCountdown: boolean;
   pauseAtRoundsEnd: boolean;
   setPauseAtRoundsEnd: Dispatch<SetStateAction<boolean>>;
+  timeout: number;
 }) => {
   const [inviteUrl, setInviteUrl] = useState("");
 
@@ -64,6 +66,7 @@ const Host = ({
                 ? `Ending the game in ${countdown} Seconds`
                 : `This round ends in ${countdown} Seconds`)}
           </div>
+          {game.status == "ongoing" && <div>Timeout {timeout}</div>}
           <button
             className="btn btn-sm btn-primary my-4 w-fit "
             onClick={() => {
