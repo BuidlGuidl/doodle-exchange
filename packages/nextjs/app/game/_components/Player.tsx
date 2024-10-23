@@ -1,23 +1,19 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import Leaderboard from "./Leaderboard";
+import { motion as m } from "framer-motion";
 import CanvasDraw from "react-canvas-draw";
 import { CirclePicker } from "react-color";
 import { useWindowSize } from "usehooks-ts";
 import { useAccount } from "wagmi";
 import { ArrowUturnLeftIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { getGpt4oClassify } from "~~/app/classify";
-import { Game, Player as playerType } from "~~/types/game/game";
+import { CanvasDrawLines, Game, Player as playerType } from "~~/types/game/game";
+import { EMPTY_DRAWING } from "~~/utils/constants";
 import { updatePlayerStatus } from "~~/utils/doodleExchange/api/apiUtils";
+import { isGuessCorrect, makeConfetti } from "~~/utils/doodleExchange/helpersClient";
+import { notification } from "~~/utils/scaffold-eth";
 import { uploadToFirebase } from "~~/utils/uploadToFirebase";
-
-interface CanvasDrawLines extends CanvasDraw {
-  canvas: any;
-  props: {
-    brushColor: string;
-    canvasWidth: any;
-    canvasHeight: any;
-  };
-}
 
 const Player = ({
   game,
@@ -40,6 +36,7 @@ const Player = ({
   const [canvasDisabled, setCanvasDisabled] = useState<boolean>(false);
   const [finalDrawing, setFinalDrawing] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
+  const [showTryAgain, setShowTryAgain] = useState<boolean>(false);
   const [gptAnswer, setGPTAnswer] = useState<string>("");
   const [drawingStarted, setDrawingStarted] = useState(false);
 
@@ -48,10 +45,9 @@ const Player = ({
   const colorPickerSize = `${Math.round(0.95 * calculatedCanvaSize)}px`;
 
   const isLastRound = game.currentRound === game.totalRounds - 1;
-  const showResultsButton = !isUpdatingRound || game.currentRound === player.currentRound;
   const countdownText = isLastRound
     ? `Ending the game in ${countdown} Seconds`
-    : `Moving to next round in ${countdown} Seconds`;
+    : `This round ends in ${countdown} Seconds`;
 
   useEffect(() => {
     if (calculatedCanvaSize !== 1) {
@@ -67,21 +63,36 @@ const Player = ({
   const handleSubmit = async () => {
     setCanvasDisabled(true);
     const drawingDataUrl = drawingCanvas.current?.canvas.drawing.toDataURL() || "";
-    updatePlayerStatus(game._id, "classifying", token, connectedAddress || "", drawingDataUrl);
+    if (drawingDataUrl === EMPTY_DRAWING) {
+      notification.warning("Your drawing seems to be empty.");
+      setCanvasDisabled(false);
+      return;
+    }
+    updatePlayerStatus(game._id, "classifying", token, connectedAddress || "");
     setFinalDrawing(drawingDataUrl);
     console.log(drawingDataUrl);
     const response = await getGpt4oClassify(drawingDataUrl);
+    let imageFbLink = "";
     if (response?.answer) {
-      uploadToFirebase(game.wordsList?.[player.currentRound], response.answer, connectedAddress || "", drawingDataUrl);
+      imageFbLink = await uploadToFirebase(
+        game.wordsList?.[player.currentRound],
+        response.answer,
+        connectedAddress || "",
+        drawingDataUrl,
+      );
+      await updatePlayerStatus(game._id, "waiting", token, connectedAddress || "", imageFbLink);
       setGPTAnswer(response.answer);
-      if (response.answer.toLowerCase() === game.wordsList?.[player.currentRound]?.toLowerCase()) {
-        moveToNextRound(connectedAddress || "", true);
+      if (isGuessCorrect(response.answer, game.wordsList?.[player.currentRound])) {
+        makeConfetti();
+        await moveToNextRound(connectedAddress || "", true);
         setCanvasDisabled(false);
+      } else {
+        setShowTryAgain(true);
       }
     } else {
       console.log("error with classification fetching part");
     }
-    updatePlayerStatus(game._id, "waiting", token, connectedAddress || "");
+    setCanvasDisabled(false);
     setDrawingStarted(false);
   };
 
@@ -89,6 +100,7 @@ const Player = ({
     setGPTAnswer("");
     setCanvasDisabled(false);
     setFinalDrawing("");
+    setShowTryAgain(false);
   };
 
   useEffect(() => {
@@ -102,21 +114,27 @@ const Player = ({
   }
 
   return (
-    <div className="flex items-center flex-col flex-grow pt-3">
+    <m.div
+      initial={{ y: "100%" }}
+      animate={{ y: "0%" }}
+      exit={{ opacity: 1 }}
+      transition={{ duration: 0.2, ease: "easeOut" }}
+      className="flex items-center flex-col flex-grow min-h-screen p-6"
+    >
       {finalDrawing ? (
         <>
           <div className="mb-1.5 text-center">
             {gptAnswer ? (
               <div className="flex flex-col items-center">
-                {showResultsButton && (
+                {showTryAgain && (
                   <button className="btn btn-sm btn-primary mb-1" onClick={resetGame}>
-                    {game.status === "finished" ? "Show Results" : "Try again"}
+                    Try again
                   </button>
                 )}
                 <div>
                   GPT sees <span className="font-bold">{gptAnswer}</span>
                 </div>
-                <div className="h-6">{isUpdatingRound && countdownText}</div>
+                <div className={`h-6 ${!isUpdatingRound && "hidden"}`}>{countdownText}</div>
               </div>
             ) : (
               <span className="flex flex-col m-auto loading loading-spinner loading-sm"></span>
@@ -141,7 +159,7 @@ const Player = ({
               </button>
             </div>
           </div>
-          <div className="h-6">{isUpdatingRound && countdownText}</div>
+          <div className={`h-6 ${!isUpdatingRound && "hidden"}`}>{countdownText}</div>
           <div className={canvasDisabled ? "cursor-not-allowed" : "cursor-none"}>
             <CanvasDraw
               key="canvas"
@@ -149,7 +167,7 @@ const Player = ({
               canvasWidth={calculatedCanvaSize}
               canvasHeight={calculatedCanvaSize}
               brushColor={color}
-              lazyRadius={1}
+              lazyRadius={0}
               brushRadius={3}
               disabled={canvasDisabled}
               hideGrid
@@ -176,7 +194,7 @@ const Player = ({
               <button
                 className="btn btn-block btn-primary"
                 onClick={handleSubmit}
-                disabled={game.currentRound !== player.currentRound}
+                disabled={game.currentRound !== player.currentRound || countdown == 0}
               >
                 Submit
               </button>
@@ -184,7 +202,10 @@ const Player = ({
           </div>
         </>
       )}
-    </div>
+      <div className="flex w-fit mt-24 lg:justify-end justify-center lg:fixed lg:right-5 lg:bottom-12">
+        <Leaderboard game={game} />
+      </div>
+    </m.div>
   );
 };
 

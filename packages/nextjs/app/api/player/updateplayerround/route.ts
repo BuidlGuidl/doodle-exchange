@@ -32,9 +32,15 @@ export const PATCH = async (request: Request) => {
       return new NextResponse(JSON.stringify({ error: "You are ahead of the current game round" }), { status: 403 });
     }
 
+    const anyPlayerAhead = game.players.some((p: Player) => p.currentRound > game.currentRound);
     const currentPlayerRound = player.currentRound;
     const isFinalRound = player.currentRound === game.totalRounds - 1;
     const isCurrentRound = currentPlayerRound === game.currentRound;
+    const finalRound = game.totalRounds - 1;
+    const anyPlayerHasWonFinalRound = game.players.some((p: Player) => {
+      const finalRoundEntry = p.rounds.find((r: any) => r.round === finalRound);
+      return finalRoundEntry && finalRoundEntry.won;
+    });
 
     // Find or create the current round entry
     let roundEntry = player.rounds.find((r: any) => r.round === currentPlayerRound);
@@ -47,12 +53,17 @@ export const PATCH = async (request: Request) => {
       player.rounds.push(roundEntry);
     }
 
-    player.rounds[player.currentRound].points = won ? (isCurrentRound ? 3 : 1) : 0;
-    player.rounds[player.currentRound].won = won;
+    player.rounds[currentPlayerRound].points = won ? (!game?.winners[currentPlayerRound] ? 3 : 1) : 0;
+    player.rounds[currentPlayerRound].won = won;
 
-    if (isFinalRound || isCurrentRound) {
+    if (!game.winners[currentPlayerRound]) {
+      game.winners[currentPlayerRound] = [];
+    }
+    game.winners[currentPlayerRound].push(address);
+
+    if ((isCurrentRound && !anyPlayerAhead) || (isFinalRound && !anyPlayerHasWonFinalRound)) {
       const roundChannel = ablyRealtime.channels.get("updateRound");
-      roundChannel.publish("updateRound", game);
+      await roundChannel.publish("updateRound", game);
     }
 
     if (isFinalRound) {
@@ -62,17 +73,12 @@ export const PATCH = async (request: Request) => {
       player.status = "waiting";
     }
 
-    if (!game.winners[currentPlayerRound]) {
-      game.winners[currentPlayerRound] = [];
-    }
-    game.winners[currentPlayerRound].push(address);
-
     const updatedGame = await game.save();
 
     const gameChannel = ablyRealtime.channels.get("gameUpdate");
     const playerChannel = ablyRealtime.channels.get("playerUpdate");
-    gameChannel.publish("gameUpdate", updatedGame);
-    playerChannel.publish("playerUpdate", player);
+    if (!anyPlayerAhead) await gameChannel.publish("gameUpdate", updatedGame);
+    await playerChannel.publish("playerUpdate", player);
 
     return new NextResponse(
       JSON.stringify({

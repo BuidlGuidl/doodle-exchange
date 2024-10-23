@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from "react";
 import QRCode from "qrcode.react";
-import CopyToClipboard from "react-copy-to-clipboard";
-import { CheckCircleIcon, DocumentDuplicateIcon } from "@heroicons/react/24/outline";
+import { UserIcon } from "@heroicons/react/24/outline";
+import CopyButton from "~~/app/_components/CopyButton";
+import UserCard from "~~/app/_components/UserCard";
 import { Game } from "~~/types/game/game";
 
-const Lobby = ({ game }: { game: Game }) => {
+const Lobby = ({ game, connectedAddress }: { game: Game; connectedAddress: string }) => {
   const [inviteUrl, setInviteUrl] = useState("");
-  const [inviteUrlCopied, setInviteUrlCopied] = useState(false);
-  const [inviteCopied, setInviteCopied] = useState(false);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -19,65 +18,35 @@ const Lobby = ({ game }: { game: Game }) => {
 
   return (
     <div className="p-6">
-      <div className=" bg-base-200 mt-2 rounded-md">
-        <div className="flex">
-          <span>Copy Invite Url</span>
-          {inviteUrlCopied ? (
-            <CheckCircleIcon
-              className="ml-1.5 text-xl font-normal text-sky-600 h-5 w-5 cursor-pointer"
-              aria-hidden="true"
-            />
-          ) : (
-            <CopyToClipboard
-              text={inviteUrl?.toString() || ""}
-              onCopy={() => {
-                setInviteUrlCopied(true);
-                setTimeout(() => {
-                  setInviteUrlCopied(false);
-                }, 800);
-              }}
-            >
-              <DocumentDuplicateIcon
-                className="ml-1.5 text-xl font-normal text-sky-600 h-5 w-5 cursor-pointer"
-                aria-hidden="true"
-              />
-            </CopyToClipboard>
-          )}
+      <div className="flex justify-center bg-base-200 mt-2 rounded-md">
+        <div className="flex flex-col items-end mr-5">
+          <span className="flex">
+            Copy Invite Url <CopyButton textToCopy={inviteUrl} />
+          </span>
+          <span className="flex">Rounds: {game?.totalRounds}</span>
+          <span className="flex text-sky-600 text-xl items-center ">
+            <UserIcon className="text-sky-600 h-5 w-5 justify-center items-center" />: {game.players.length}
+          </span>
         </div>
         <div>
           <QRCode value={inviteUrl?.toString() || ""} className="" level="H" renderAs="svg" />
         </div>
-        <div className="flex mt-2">
-          <span>Invite: {game.inviteCode}</span>
-          {inviteCopied ? (
-            <CheckCircleIcon
-              className="ml-1.5 text-xl font-normal text-sky-600 h-5 w-5 cursor-pointer"
-              aria-hidden="true"
-            />
-          ) : (
-            <CopyToClipboard
-              text={game.inviteCode}
-              onCopy={() => {
-                setInviteCopied(true);
-                setTimeout(() => {
-                  setInviteCopied(false);
-                }, 800);
-              }}
-            >
-              <DocumentDuplicateIcon
-                className="ml-1.5 text-xl font-normal text-sky-600 h-5 w-5 cursor-pointer"
-                aria-hidden="true"
-              />
-            </CopyToClipboard>
-          )}
-        </div>
+        <div className="flex mt-2"></div>
       </div>
-      <h1>Lobby {game.players.length}</h1>
-      <h1 className="flex justify-center text-2xl">Waiting host to start</h1>
-
-      {game.players.map(player => {
-        return <h1 key={player.address}>{player.address}</h1>;
-      })}
+      <h1 className="flex justify-center text-2xl mt-5">Waiting host to start</h1>
+      <div className="flex flex-wrap gap-2 justify-center items-center max-w-2xl mx-auto">
+        {game.players.map(player => {
+          return (
+            <span key={player.address} className="flex">
+              <UserCard
+                address={player?.address}
+                username={player?.userName}
+                className={`${player?.address === connectedAddress ? "bg-primary" : "bg-secondary"} rounded-full btn-sm flex items-center my-0 shadow-md gap-0`}
+              />
+            </span>
+          );
+        })}
+      </div>
     </div>
   );
 };

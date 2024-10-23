@@ -1,4 +1,3 @@
-import { ablyRealtime } from "./socket";
 import mongoose from "mongoose";
 import doodleConfig from "~~/doodle.config";
 
@@ -18,13 +17,9 @@ const connectdb = async () => {
   }
 
   try {
-    await ablyRealtime.connection.once("connected");
     await mongoose.connect(MONGODB_URI, {
       dbName: "doodleExchange",
       bufferCommands: false,
-      // connectTimeoutMS: 10000,
-      // socketTimeoutMS: 45000,
-      // serverSelectionTimeoutMS: 10000,
     });
     console.log("Connected");
   } catch (error) {

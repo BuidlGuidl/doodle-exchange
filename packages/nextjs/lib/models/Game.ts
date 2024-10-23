@@ -8,6 +8,10 @@ const gameSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    hostUsername: {
+      type: String,
+      required: true,
+    },
     status: {
       type: String,
       enum: ["lobby", "ongoing", "paused", "finished"],
@@ -43,6 +47,21 @@ const gameSchema = new mongoose.Schema(
     currentRound: {
       type: Number,
       default: 0,
+    },
+    drawings: {
+      type: [
+        {
+          link: { type: String, required: true },
+          isCorrect: { type: Boolean },
+          address: { type: String },
+          userName: { type: String },
+          round: { type: Number },
+          timeStamp: { type: Number },
+          drawWord: { type: String },
+          gptGuess: { type: String },
+        },
+      ],
+      default: [],
     },
   },
   { timestamps: true },

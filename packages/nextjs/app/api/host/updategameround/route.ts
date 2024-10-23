@@ -6,8 +6,7 @@ import { ablyRealtime } from "~~/lib/socket";
 export const PATCH = async (request: Request) => {
   try {
     const body = await request.json();
-    const { id } = body;
-
+    const { id, pause } = body;
     await connectdb();
     const game = await Game.findById(id);
 
@@ -21,11 +20,12 @@ export const PATCH = async (request: Request) => {
     }
 
     const newRound = game.currentRound + 1;
+    const isFinalRound = newRound === game.totalRounds;
 
     for (const player of game.players) {
       const currentPlayerRound = player.currentRound;
       if (currentPlayerRound < newRound) {
-        if (newRound !== game.totalRounds) player.currentRound = newRound;
+        if (!isFinalRound) player.currentRound = newRound;
         player.status = "waiting";
 
         let roundEntry = player.rounds.find((r: any) => r.round === currentPlayerRound);
@@ -36,14 +36,14 @@ export const PATCH = async (request: Request) => {
             won: false,
           };
           player.rounds.push(roundEntry);
-        } else {
-          player.rounds[player.currentRound].points = 0;
-          player.rounds[player.currentRound].won = false;
+        } else if (!isFinalRound) {
+          player.rounds[currentPlayerRound].points = 0;
+          player.rounds[currentPlayerRound].won = false;
         }
       }
     }
 
-    let message = `Moving to round ${newRound}`;
+    let message = `Moving to round ${newRound + 1}`;
     if (newRound === game.totalRounds) {
       game.status = "finished";
       message = "Ended game successfully";
@@ -51,9 +51,13 @@ export const PATCH = async (request: Request) => {
 
     if (newRound !== game.totalRounds) game.currentRound = newRound;
 
+    if (pause) {
+      game.status = "paused";
+    }
+
     const updatedGame = await game.save();
     const gameChannel = ablyRealtime.channels.get("gameUpdate");
-    gameChannel.publish("gameUpdate", updatedGame);
+    await gameChannel.publish("gameUpdate", updatedGame);
 
     return new NextResponse(
       JSON.stringify({
@@ -67,7 +71,7 @@ export const PATCH = async (request: Request) => {
   } catch (error) {
     return new NextResponse(
       JSON.stringify({
-        error: "Error updating Game Status " + (error as Error).message,
+        error: "Error updating Game Round " + (error as Error).message,
       }),
       {
         status: 500,

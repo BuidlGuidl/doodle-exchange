@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { fetchOrCreateUsername } from "../../utils/utils";
 import { SignJWT } from "jose";
 import doodleConfig from "~~/doodle.config";
 import connectdb from "~~/lib/db";
@@ -53,20 +54,26 @@ export const GET = async () => {
 export const POST = async (request: Request) => {
   try {
     const body = await request.json();
-    const { hostAddress, totalRounds } = body;
+    const { hostAddress, totalRounds, words, difficulty } = body;
 
     await connectdb();
+
+    const hostUsername = await fetchOrCreateUsername(hostAddress);
+    console.log;
     const newGame = new Game({
       hostAddress,
+      hostUsername,
       status: "lobby",
       inviteCode: await generateUniqueInvite(8),
-      wordsList: await getWordsList(totalRounds),
+      wordsList: words.length === totalRounds ? words : await getWordsList(totalRounds, difficulty),
       totalRounds: totalRounds,
       currentRound: 0,
       winners: [],
     });
 
     await newGame.save();
+
+    console.log("New game created", newGame);
 
     let token;
 

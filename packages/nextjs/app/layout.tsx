@@ -1,3 +1,4 @@
+import Head from "next/head";
 import "@rainbow-me/rainbowkit/styles.css";
 import { ScaffoldEthAppWithProviders } from "~~/components/ScaffoldEthAppWithProviders";
 import { ThemeProvider } from "~~/components/ThemeProvider";
@@ -12,6 +13,9 @@ export const metadata = getMetadata({
 const ScaffoldEthApp = ({ children }: { children: React.ReactNode }) => {
   return (
     <html suppressHydrationWarning>
+      <Head>
+        <script defer data-domain="doodle.exchange" src="https://plausible.io/js/script.js"></script>
+      </Head>
       <body>
         <ThemeProvider enableSystem defaultTheme={"light"}>
           <ScaffoldEthAppWithProviders>{children}</ScaffoldEthAppWithProviders>
