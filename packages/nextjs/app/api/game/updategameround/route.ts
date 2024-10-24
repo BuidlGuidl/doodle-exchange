@@ -6,7 +6,7 @@ import { ablyRealtime } from "~~/lib/socket";
 export const PATCH = async (request: Request) => {
   try {
     const body = await request.json();
-    const { id, pause } = body;
+    const { id, newRound } = body;
     await connectdb();
     const game = await Game.findById(id);
 
@@ -19,7 +19,17 @@ export const PATCH = async (request: Request) => {
       return new NextResponse(JSON.stringify({ error: errorMessage }), { status: 403 });
     }
 
-    const newRound = game.currentRound + 1;
+    if (newRound == game.currentRound) {
+      return new NextResponse(
+        JSON.stringify({
+          game: game,
+        }),
+        {
+          status: 200,
+        },
+      );
+    }
+
     const isFinalRound = newRound === game.totalRounds;
 
     for (const player of game.players) {
@@ -50,10 +60,6 @@ export const PATCH = async (request: Request) => {
     }
 
     if (newRound !== game.totalRounds) game.currentRound = newRound;
-
-    if (pause) {
-      game.status = "paused";
-    }
 
     const updatedGame = await game.save();
     const gameChannel = ablyRealtime.channels.get("gameUpdate");

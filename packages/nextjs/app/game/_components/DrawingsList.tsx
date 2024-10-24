@@ -9,17 +9,17 @@ const DrawingsList = ({ game }: { game: Game }) => {
   const [selectedRound, setSelectedRound] = useState(-1);
   const [drawings, setDrawings] = useState<Drawings[]>();
 
-  const scrollHandler = () => {
-    setTimeout(() => {
-      if (endRef.current && game.drawings.length > 2) {
-        (endRef.current as HTMLElement).scrollIntoView({ behavior: "smooth" });
-      }
-    }, 500);
-  };
+  // const scrollHandler = () => {
+  //   setTimeout(() => {
+  //     if (endRef.current && game.drawings.length > 2) {
+  //       (endRef.current as HTMLElement).scrollIntoView({ behavior: "smooth" });
+  //     }
+  //   }, 500);
+  // };
 
-  useEffect(() => {
-    scrollHandler();
-  });
+  // useEffect(() => {
+  //   scrollHandler();
+  // }, [drawings]);
 
   useEffect(() => {
     if (game && game.drawings) {
@@ -32,7 +32,7 @@ const DrawingsList = ({ game }: { game: Game }) => {
       });
       setDrawings(drawings);
     }
-  }, [selectedRound, game]);
+  }, [selectedRound, game.drawings]);
 
   return (
     <div className="flex flex-col gap-2 items-center h-[75vh] max-w-md py-4 ">

@@ -202,7 +202,7 @@ const Player = ({
           </div>
         </>
       )}
-      <div className="flex w-fit mt-24 lg:justify-end justify-center lg:fixed lg:right-5 lg:bottom-12">
+      <div className="flex w-fit mt-24 xl:justify-end justify-center xl:fixed xl:right-5 xl:bottom-12">
         <Leaderboard game={game} />
       </div>
     </m.div>
