@@ -206,7 +206,7 @@ const GamePage = () => {
   };
 
   if (game?.status === "finished") {
-    if (!client.connection) client.close();
+       if (client.connection.state == "connected") client.close();
     return <Results game={game as Game} connectedAddress={connectedAddress || ""} />;
   } else if (isHost && game) {
     return (
