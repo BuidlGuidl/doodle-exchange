@@ -12,18 +12,20 @@ const Host = ({
   game,
   token,
   isUpdatingRound,
-  countdown,
+  updateRoundCountdown,
   pauseAtRoundsEnd,
   setPauseAtRoundsEnd,
+  timeout,
+  showRoundCountdown,
 }: {
   game: Game;
   token: string;
   isUpdatingRound: boolean;
-  countdown: number;
-  showCountdown: boolean;
+  updateRoundCountdown: number;
   pauseAtRoundsEnd: boolean;
   setPauseAtRoundsEnd: Dispatch<SetStateAction<boolean>>;
   timeout: number;
+  showRoundCountdown: boolean;
 }) => {
   const [inviteUrl, setInviteUrl] = useState("");
 
@@ -62,10 +64,10 @@ const Host = ({
           <div className="h-6 ">
             {isUpdatingRound &&
               (game.currentRound === game.totalRounds - 1
-                ? `Ending the game in ${countdown} Seconds`
-                : `This round ends in ${countdown} Seconds`)}
+                ? `Ending the game in ${updateRoundCountdown} Seconds`
+                : `This round ends in ${updateRoundCountdown} Seconds`)}
           </div>
-          {/* {game.status == "ongoing" && <div>Timeout {timeout}</div>} */}
+          {game.status == "ongoing" && !isUpdatingRound && !showRoundCountdown && <div>Timeout {timeout}</div>}
           <button
             className="btn btn-sm btn-primary my-4 w-fit "
             onClick={() => {
@@ -76,7 +78,7 @@ const Host = ({
                 notification.info(`Game will pause and the end of this round`);
               }
             }}
-            disabled={pauseAtRoundsEnd || game.currentRound + 1 == game.totalRounds}
+            disabled={pauseAtRoundsEnd || (game.currentRound + 1 == game.totalRounds && game.status == "ongoing")}
           >
             <PlayPauseIcon className=" h-5 w-5 " />
             {game.status === "paused" ? (
@@ -153,14 +155,14 @@ const Host = ({
   game,
   token,
   isUpdatingRound,
-  countdown,
+  updateRoundCountdown,
   pauseAtRoundsEnd,
   setPauseAtRoundsEnd,
 }: {
   game: Game;
   token: string;
   isUpdatingRound: boolean;
-  countdown: number;
+  updateRoundCountdown: number;
   showCountdown: boolean;
   setShowCountdown: Dispatch<SetStateAction<boolean>>;
   pauseAtRoundsEnd: boolean;
@@ -256,8 +258,8 @@ const Host = ({
         <div className="h-6 ">
           {isUpdatingRound &&
             (game.currentRound === game.totalRounds - 1
-              ? `Ending the game in ${countdown} Seconds`
-              : `This round ends in ${countdown} Seconds`)}
+              ? `Ending the game in ${updateRoundCountdown} Seconds`
+              : `This round ends in ${updateRoundCountdown} Seconds`)}
         </div>
         <button
           className="btn btn-sm btn-primary my-4 w-fit "

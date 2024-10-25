@@ -20,15 +20,19 @@ const Player = ({
   moveToNextRound,
   player,
   isUpdatingRound,
-  countdown,
+  updateRoundCountdown,
   token,
+  timeout,
+  showRoundCountdown,
 }: {
   game: Game;
   moveToNextRound: (winner: string, won: boolean) => void;
   player: playerType;
   isUpdatingRound: boolean;
-  countdown: number;
+  updateRoundCountdown: number;
   token: string;
+  timeout: number;
+  showRoundCountdown: boolean;
 }) => {
   const { address: connectedAddress } = useAccount();
   const drawingCanvas = useRef<CanvasDrawLines>(null);
@@ -45,9 +49,9 @@ const Player = ({
   const colorPickerSize = `${Math.round(0.95 * calculatedCanvaSize)}px`;
 
   const isLastRound = game.currentRound === game.totalRounds - 1;
-  const countdownText = isLastRound
-    ? `Ending the game in ${countdown} Seconds`
-    : `This round ends in ${countdown} Seconds`;
+  const updateRoundCountdownText = isLastRound
+    ? `Ending the game in ${updateRoundCountdown} Seconds`
+    : `This round ends in ${updateRoundCountdown} Seconds`;
 
   useEffect(() => {
     if (calculatedCanvaSize !== 1) {
@@ -134,7 +138,7 @@ const Player = ({
                 <div>
                   GPT sees <span className="font-bold">{gptAnswer}</span>
                 </div>
-                <div className={`h-6 ${!isUpdatingRound && "hidden"}`}>{countdownText}</div>
+                <div className={`h-6 ${!isUpdatingRound && "hidden"}`}>{updateRoundCountdownText}</div>
               </div>
             ) : (
               <span className="flex flex-col m-auto loading loading-spinner loading-sm"></span>
@@ -159,7 +163,7 @@ const Player = ({
               </button>
             </div>
           </div>
-          <div className={`h-6 ${!isUpdatingRound && "hidden"}`}>{countdownText}</div>
+          <div className={`h-6 ${!isUpdatingRound && "hidden"}`}>{updateRoundCountdownText}</div>
           <div className={canvasDisabled ? "cursor-not-allowed" : "cursor-none"}>
             <CanvasDraw
               key="canvas"
@@ -194,7 +198,7 @@ const Player = ({
               <button
                 className="btn btn-block btn-primary"
                 onClick={handleSubmit}
-                disabled={game.currentRound !== player.currentRound || countdown == 0}
+                disabled={game.currentRound !== player.currentRound || updateRoundCountdown == 0}
               >
                 Submit
               </button>
@@ -205,6 +209,9 @@ const Player = ({
       <div className="flex w-fit mt-24 xl:justify-end justify-center xl:fixed xl:right-5 xl:bottom-12">
         <Leaderboard game={game} />
       </div>
+      {game.status == "ongoing" && !isUpdatingRound && !showRoundCountdown && (
+        <div className="fixed bottom-2 right-5">Timeout {timeout}</div>
+      )}
     </m.div>
   );
 };

@@ -38,6 +38,7 @@ export const PATCH = async (request: Request) => {
       status: 200,
     });
   } catch (error) {
+    console.log("Error updating Game Status ", (error as Error).message);
     return new NextResponse(
       JSON.stringify({
         error: "Error updating Game Status " + (error as Error).message,
