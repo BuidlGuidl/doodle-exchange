@@ -4,16 +4,17 @@ import Leaderboard from "./Leaderboard";
 import CanvasDraw from "react-canvas-draw";
 import { CirclePicker } from "react-color";
 import { useWindowSize } from "usehooks-ts";
-// import { useAccount } from "wagmi";
+import { useAccount } from "wagmi";
 import { ArrowUturnLeftIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { getGpt4oEvaluate } from "~~/app/classify";
 import { CanvasDrawLines } from "~~/types/game/game";
+import { uploadDailyDoodleToFirebase } from "~~/utils/doodleExchange/dailyDoodle/utils";
 import { getDailyWord } from "~~/utils/doodleExchange/getWordsList";
 
 type gameStateType = "start" | "drawing" | "result" | "leaderboard" | "loading";
 
 const DailyDoodle = () => {
-  // const { address: connectedAddress } = useAccount();
+  const { address: connectedAddress } = useAccount();
   const drawingCanvas = useRef<CanvasDrawLines>(null);
   const [color, setColor] = useState<string>("rgba(96,125,139,100)");
   const [canvasDisabled, setCanvasDisabled] = useState<boolean>(false);
@@ -59,11 +60,14 @@ const DailyDoodle = () => {
     const response = await getGpt4oEvaluate(drawingCanvas?.current?.canvas.drawing.toDataURL(), drawWord);
     console.log(response);
     if (response?.answer) {
-      // if (isGuessCorrect(response.answer, drawWord)) {
-      //   makeConfetti();
-      // }
       setGPTAnswer(response?.answer);
-      // uploadToFirebase("dailyDoodle", drawWord, connectedAddress || "", drawingDataUrl);
+      const uploadedDrawingURL = await uploadDailyDoodleToFirebase(
+        drawWord,
+        connectedAddress || "",
+        response?.answer,
+        drawingDataUrl,
+      );
+      console.log(uploadedDrawingURL);
     } else {
       console.log("error with evalution part");
     }
