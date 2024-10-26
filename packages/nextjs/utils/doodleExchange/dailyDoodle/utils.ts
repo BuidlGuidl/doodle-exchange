@@ -91,3 +91,26 @@ export async function getTodaysResults() {
     return [];
   }
 }
+
+export async function hasSubmittedToday(connectedAddress: string) {
+  try {
+    const dateOnly = new Date();
+    dateOnly.setUTCHours(0, 0, 0, 0);
+
+    const endOfDay = new Date(dateOnly);
+    endOfDay.setUTCHours(23, 59, 59, 999);
+
+    const submission = await DailyDoodleResults.findOne({
+      address: connectedAddress,
+      challengeDay: {
+        $gte: dateOnly,
+        $lt: endOfDay,
+      },
+    }).lean();
+
+    return submission !== null; // Return true if a submission exists, otherwise false
+  } catch (error) {
+    console.error("Error checking submission:", error);
+    return false; // Return false in case of an error
+  }
+}
