@@ -1,5 +1,6 @@
 "use server";
 
+import DailyDoodle from "~~/lib/models/DailyDoodle";
 import { gameDifficultyButtons } from "~~/types/utils";
 import { EASY_WORDS, HARD_WORDS, MEDIUM_WORDS, WORDS } from "~~/utils/constants";
 
@@ -41,5 +42,18 @@ export async function getWord() {
 }
 
 export async function getDailyWord() {
-  return "Apple";
+  const dateOnly = new Date();
+  dateOnly.setUTCHours(0, 0, 0, 0);
+
+  let dailyWord = await DailyDoodle.findOne({ date: dateOnly });
+
+  // If no word is found for today, pick a new one
+  if (!dailyWord) {
+    const randomWord = WORDS[Math.floor(Math.random() * WORDS.length)];
+    dailyWord = new DailyDoodle({ date: dateOnly, word: randomWord });
+
+    await dailyWord.save();
+  }
+
+  return dailyWord.word;
 }
