@@ -39,3 +39,7 @@ export async function getWordsList(numberOfWords: number, difficulty: gameDiffic
 export async function getWord() {
   return WORDS[Math.floor(Math.random() * WORDS.length)];
 }
+
+export async function getDailyWord() {
+  return "Apple";
+}
