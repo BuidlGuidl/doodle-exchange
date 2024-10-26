@@ -8,7 +8,7 @@ import { useAccount } from "wagmi";
 import { ArrowUturnLeftIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { getGpt4oEvaluate } from "~~/app/classify";
 import { CanvasDrawLines } from "~~/types/game/game";
-import { uploadDailyDoodleToFirebase } from "~~/utils/doodleExchange/dailyDoodle/utils";
+import { submitResult, uploadDailyDoodleToFirebase } from "~~/utils/doodleExchange/dailyDoodle/utils";
 import { getDailyWord } from "~~/utils/doodleExchange/getWordsList";
 
 type gameStateType = "start" | "drawing" | "result" | "leaderboard" | "loading";
@@ -58,16 +58,15 @@ const DailyDoodle = () => {
     const drawingDataUrl = drawingCanvas.current?.canvas.drawing.toDataURL() || "";
     setFinalDrawing(drawingDataUrl);
     const response = await getGpt4oEvaluate(drawingCanvas?.current?.canvas.drawing.toDataURL(), drawWord);
-    console.log(response);
     if (response?.answer) {
       setGPTAnswer(response?.answer);
-      const uploadedDrawingURL = await uploadDailyDoodleToFirebase(
+      const uploadedDrawingLink = await uploadDailyDoodleToFirebase(
         drawWord,
         connectedAddress || "",
         response?.answer,
         drawingDataUrl,
       );
-      console.log(uploadedDrawingURL);
+      await submitResult(connectedAddress || "", uploadedDrawingLink, response?.answer, drawWord);
     } else {
       console.log("error with evalution part");
     }
