@@ -100,7 +100,7 @@ const DailyDoodle = () => {
             Today&apos;s challenge is <b>{drawWord}</b>
           </h1>
           <p className="text-center">
-            Do your best to draw it, and let GPT evaluate your drawing on a scale from 0 to 100!
+            Do your best to draw it, and let GPT evaluate your drawing on a scale from 0 to 1000!
           </p>
           <button className="btn btn-sm btn-primary" onClick={() => setGameState("drawing")}>
             Start Game

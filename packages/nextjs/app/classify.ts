@@ -51,7 +51,7 @@ export async function getGpt4oEvaluate(image: string, word: string) {
         content: [
           {
             type: "text",
-            text: `On a scale from 0 to 100, evaluate how clearly and accurately this image represents the word ${word}, considering factors such as visual clarity, relevance, and overall depiction. Provide only the numerical score.`,
+            text: `On a scale from 0 to 1000, evaluate how clearly and accurately this image represents the word ${word}. Please consider the following criteria in your assessment: 1. Visual Clarity (0-400 points): How clear and easy to understand is the image? Are the details sharp and well-defined? 2. Relevance (0-300 points): How closely does the image relate to the word ${word}? Does it effectively convey the intended meaning? 3. Overall Depiction (0-300 points): How well does the image capture the essence of the word? Is the composition effective and engaging? Instructions: Provide a numerical score based on the criteria above, ensuring that the total score reflects your assessment across all categories. Please provide only the total numerical score.`,
           },
           {
             type: "image_url",
