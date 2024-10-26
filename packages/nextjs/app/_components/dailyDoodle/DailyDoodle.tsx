@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import Leaderboard from "./Leaderboard";
 import CanvasDraw from "react-canvas-draw";
 import { CirclePicker } from "react-color";
 import { useWindowSize } from "usehooks-ts";
@@ -170,6 +171,7 @@ const DailyDoodle = () => {
           </div>
         </>
       )}
+      {gameState === "leaderboard" && <Leaderboard />}
     </div>
   );
 };
