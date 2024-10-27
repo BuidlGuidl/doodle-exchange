@@ -1,5 +1,6 @@
 "use server";
 
+import connectdb from "~~/lib/db";
 import DailyDoodle from "~~/lib/models/DailyDoodle";
 import { gameDifficultyButtons } from "~~/types/utils";
 import { EASY_WORDS, HARD_WORDS, MEDIUM_WORDS, WORDS } from "~~/utils/constants";
@@ -42,6 +43,7 @@ export async function getWord() {
 }
 
 export async function getDailyWord() {
+  await connectdb();
   const dateOnly = new Date();
   dateOnly.setUTCHours(0, 0, 0, 0);
 

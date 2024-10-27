@@ -4,6 +4,7 @@ import { storage } from "../../../app/firebaseConfig";
 import { getCurrentUserToken } from "../../firebaseAuth";
 import { getDownloadURL, ref, uploadString } from "firebase/storage";
 import { fetchOrCreateUsername } from "~~/app/api/utils/utils";
+import connectdb from "~~/lib/db";
 import DailyDoodleResults from "~~/lib/models/DailyDoodleResults";
 
 export const getFormattedDateTime = () => {
@@ -48,6 +49,8 @@ export async function uploadDailyDoodleToFirebase(
 
 export async function submitResult(connectedAddress: string, drawingLink: string, score: string, drawWord: string) {
   try {
+    await connectdb();
+
     const userName = await fetchOrCreateUsername(connectedAddress);
 
     const dateOnly = new Date();
@@ -73,6 +76,7 @@ export async function submitResult(connectedAddress: string, drawingLink: string
 
 export async function getTodaysResults() {
   try {
+    await connectdb();
     const dateOnly = new Date();
 
     const startOfDay = new Date(dateOnly.setUTCHours(0, 0, 0, 0));
@@ -94,6 +98,7 @@ export async function getTodaysResults() {
 
 export async function hasSubmittedToday(connectedAddress: string) {
   try {
+    await connectdb();
     const dateOnly = new Date();
     dateOnly.setUTCHours(0, 0, 0, 0);
 
