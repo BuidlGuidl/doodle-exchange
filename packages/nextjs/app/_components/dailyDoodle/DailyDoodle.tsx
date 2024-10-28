@@ -170,7 +170,14 @@ const DailyDoodle = () => {
           <div className="mb-1.5 text-center">
             {gptAnswer ? (
               <div className="flex flex-col items-center">
-                <button className="btn btn-sm btn-primary mb-1" onClick={() => setGameState("leaderboard")}>
+                <button
+                  className="btn btn-sm btn-primary mb-1"
+                  onClick={() => {
+                    setCanvasDisabled(false);
+                    setGPTAnswer("");
+                    setGameState("leaderboard");
+                  }}
+                >
                   {"Check the leaderboard"}
                 </button>
                 <div>
