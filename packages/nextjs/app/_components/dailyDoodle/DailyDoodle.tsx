@@ -86,6 +86,7 @@ const DailyDoodle = () => {
     } else {
       console.log("error with evalution part");
     }
+    setCanvasDisabled(false);
   };
 
   if (loading) {
@@ -190,7 +191,14 @@ const DailyDoodle = () => {
           </div>
         </>
       )}
-      {gameState === "leaderboard" && <Leaderboard />}
+      {gameState === "leaderboard" && (
+        <>
+          <button className="btn btn-sm btn-primary" onClick={() => setGameState("drawing")}>
+            Try again
+          </button>
+          <Leaderboard />
+        </>
+      )}
     </div>
   );
 };
