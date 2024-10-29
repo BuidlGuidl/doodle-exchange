@@ -5,7 +5,8 @@ import { getCurrentUserToken } from "../../firebaseAuth";
 import { getDownloadURL, ref, uploadString } from "firebase/storage";
 import { fetchOrCreateUsername } from "~~/app/api/utils/utils";
 import connectdb from "~~/lib/db";
-import DailyDoodleResults from "~~/lib/models/DailyDoodleResults";
+import DailyDoodleResultsMultiple from "~~/lib/models/DailyDoodleResultsMultiple";
+import { PlayerResult } from "~~/types/dailyDoodles/dailyDoodles";
 
 export const getFormattedDateTime = () => {
   const now = new Date();
@@ -54,18 +55,39 @@ export async function submitResult(connectedAddress: string, drawingLink: string
     const userName = await fetchOrCreateUsername(connectedAddress);
 
     const dateOnly = new Date();
-    dateOnly.setUTCHours(0, 0, 0, 0);
+    const startOfDay = new Date(dateOnly.setUTCHours(0, 0, 0, 0));
+    const endOfDay = new Date(dateOnly.setUTCHours(23, 59, 59, 999));
 
-    const result = new DailyDoodleResults({
+    const existingResult: PlayerResult | null = await DailyDoodleResultsMultiple.findOne({
       address: connectedAddress,
-      userName: userName,
-      drawingLink: drawingLink,
-      score: parseFloat(score),
-      challengeDay: dateOnly,
-      word: drawWord,
-    });
+      challengeDay: {
+        $gte: startOfDay,
+        $lt: endOfDay,
+      },
+    }).lean(); // Use .lean() to return a plain object
 
-    await result.save();
+    if (existingResult) {
+      // If an entry exists, update it by adding the new score and drawing link
+      existingResult?.drawingLink?.push(drawingLink);
+      existingResult?.score?.push(parseFloat(score));
+
+      await DailyDoodleResultsMultiple.updateOne(
+        { _id: existingResult._id },
+        { $set: { drawingLink: existingResult.drawingLink, score: existingResult.score } },
+      );
+    } else {
+      // If no entry exists, create a new one
+      const result = new DailyDoodleResultsMultiple({
+        address: connectedAddress,
+        userName: userName,
+        drawingLink: [drawingLink],
+        score: [parseFloat(score)],
+        challengeDay: startOfDay,
+        word: drawWord,
+      });
+
+      await result.save();
+    }
 
     return "saved";
   } catch (error) {
@@ -82,14 +104,22 @@ export async function getTodaysResults() {
     const startOfDay = new Date(dateOnly.setUTCHours(0, 0, 0, 0));
     const endOfDay = new Date(dateOnly.setUTCHours(23, 59, 59, 999));
 
-    const results = await DailyDoodleResults.find({
+    const results = await DailyDoodleResultsMultiple.find({
       challengeDay: {
         $gte: startOfDay,
         $lt: endOfDay,
       },
-    }).sort({ score: -1 });
+    })
+      .sort({ score: -1 })
+      .lean();
 
-    return results;
+    // Map and convert `_id` to string
+    const serializedData = results.map(item => ({
+      ...item,
+      _id: item?._id?.toString(),
+    }));
+
+    return serializedData;
   } catch (error) {
     console.error("Failed to retrieve today's results", error);
     return [];
@@ -105,7 +135,7 @@ export async function hasSubmittedToday(connectedAddress: string) {
     const endOfDay = new Date(dateOnly);
     endOfDay.setUTCHours(23, 59, 59, 999);
 
-    const submission = await DailyDoodleResults.findOne({
+    const submission = await DailyDoodleResultsMultiple.findOne({
       address: connectedAddress,
       challengeDay: {
         $gte: dateOnly,
