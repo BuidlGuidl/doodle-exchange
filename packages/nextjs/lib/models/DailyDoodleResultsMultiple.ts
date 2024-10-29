@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const DailyDoodleResultsSchema = new mongoose.Schema(
+const DailyDoodleResultsMultipleSchema = new mongoose.Schema(
   {
     address: {
       type: String,
@@ -11,11 +11,11 @@ const DailyDoodleResultsSchema = new mongoose.Schema(
       required: true,
     },
     drawingLink: {
-      type: String,
+      type: [String],
       required: true,
     },
     score: {
-      type: Number,
+      type: [Number],
       required: true,
     },
     word: {
@@ -30,7 +30,8 @@ const DailyDoodleResultsSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
-const DailyDoodleResults =
-  mongoose.models.DailyDoodleResults || mongoose.model("DailyDoodleResults", DailyDoodleResultsSchema);
+const DailyDoodleResultsMultiple =
+  mongoose.models.DailyDoodleResultsMultiple ||
+  mongoose.model("DailyDoodleResultsMultiple", DailyDoodleResultsMultipleSchema);
 
-export default DailyDoodleResults;
+export default DailyDoodleResultsMultiple;

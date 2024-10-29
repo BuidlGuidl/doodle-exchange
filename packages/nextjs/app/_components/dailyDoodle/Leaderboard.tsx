@@ -8,14 +8,13 @@ import { getTodaysResults } from "~~/utils/doodleExchange/dailyDoodle/utils";
 
 const Leaderboard = () => {
   const { address } = useAccount();
-  const [showImage, setShowImage] = useState<string>("");
+  const [imagesWithScores, setImagesWithScores] = useState<{ drawingLink: string; score: number }[]>([]);
   const [leaderboard, setLeaderboard] = useState<PlayerResult[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const getLeaderboard = async () => {
       const results: PlayerResult[] = (await getTodaysResults()) as unknown as PlayerResult[];
-      console.log(results);
       setLeaderboard(results);
       setIsLoading(false);
     };
@@ -53,22 +52,32 @@ const Leaderboard = () => {
 
                 {playerResult.userName}
               </td>
-              <td className="pl-5">{playerResult.score}</td>
+              <td className="pl-5">{Math.max(...playerResult.score)}</td>
               <td className="pl-5">
-                <button className="btn btn-xs btn-secondary" onClick={() => setShowImage(playerResult?.drawingLink)}>
+                <button
+                  className="btn btn-xs btn-secondary"
+                  onClick={() => {
+                    const combinedResults = playerResult.drawingLink.map((link, index) => ({
+                      drawingLink: link,
+                      score: playerResult.score[index], // Assuming score and drawingLink are aligned by index
+                    }));
+                    const sortedResults = combinedResults.sort((a, b) => b.score - a.score);
+                    setImagesWithScores(sortedResults);
+                  }}
+                >
                   View
                 </button>
               </td>
             </tr>
           ))}
-          <ImageModal
-            showImage={showImage}
-            closeModal={() => {
-              setShowImage("");
-            }}
-          />
         </tbody>
       </table>
+      <ImageModal
+        imagesWithScores={imagesWithScores}
+        closeModal={() => {
+          setImagesWithScores([]);
+        }}
+      />
     </div>
   );
 };
