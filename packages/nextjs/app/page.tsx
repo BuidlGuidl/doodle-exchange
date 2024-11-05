@@ -3,18 +3,20 @@
 import { useState } from "react";
 import GameCreationForm from "./_components/GameCreateForm";
 import SingleGame from "./_components/SingleGame";
+import DailyDoodle from "./_components/dailyDoodle/DailyDoodle";
 import type { NextPage } from "next";
 import { useAccount } from "wagmi";
 
-type gameStateType = "createGame" | "singleGame";
+type gameStateType = "createGame" | "singleGame" | "dailyDoodle";
 
 const Home: NextPage = () => {
   const { address: connectedAddress } = useAccount();
-  const [gameState, setGameState] = useState<gameStateType>("createGame");
+  const [gameState, setGameState] = useState<gameStateType>("dailyDoodle");
 
   const menuItems = [
-    { state: "createGame", label: "Start Game" },
+    { state: "dailyDoodle", label: "Daily Doodle" },
     { state: "singleGame", label: "Single Game" },
+    { state: "createGame", label: "Start Game" },
   ];
 
   return (
@@ -37,8 +39,9 @@ const Home: NextPage = () => {
         </div>
 
         <div className="w-full mx-auto flex">
-          {gameState == "createGame" && <GameCreationForm connectedAddress={connectedAddress as string} />}
-          {gameState == "singleGame" && <SingleGame />}
+          {gameState === "createGame" && <GameCreationForm connectedAddress={connectedAddress as string} />}
+          {gameState === "singleGame" && <SingleGame />}
+          {gameState === "dailyDoodle" && <DailyDoodle />}
         </div>
       </div>
     </>
