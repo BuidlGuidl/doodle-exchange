@@ -4,6 +4,7 @@ import Leaderboard from "./Leaderboard";
 import { motion as m } from "framer-motion";
 import CanvasDraw from "react-canvas-draw";
 import { CirclePicker } from "react-color";
+import Countdown from "react-countdown";
 import { useWindowSize } from "usehooks-ts";
 import { useAccount } from "wagmi";
 import { ArrowUturnLeftIcon, TrashIcon } from "@heroicons/react/24/outline";
@@ -22,7 +23,6 @@ const Player = ({
   isUpdatingRound,
   updateRoundCountdown,
   token,
-  timeout,
   showRoundCountdown,
 }: {
   game: Game;
@@ -31,7 +31,6 @@ const Player = ({
   isUpdatingRound: boolean;
   updateRoundCountdown: number;
   token: string;
-  timeout: number;
   showRoundCountdown: boolean;
 }) => {
   const { address: connectedAddress } = useAccount();
@@ -210,7 +209,17 @@ const Player = ({
         <Leaderboard game={game} />
       </div>
       {game.status == "ongoing" && !isUpdatingRound && !showRoundCountdown && (
-        <div className="fixed bottom-2 right-5">Timeout {timeout}</div>
+        <div>
+          Timeout{" "}
+          <Countdown
+            date={game.lastRoundStartTimestamp + 66000}
+            renderer={({ minutes, seconds }) => (
+              <span>
+                {String(minutes).padStart(2, "0")}:{String(seconds).padStart(2, "0")}
+              </span>
+            )}
+          />
+        </div>
       )}
     </m.div>
   );

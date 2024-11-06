@@ -24,12 +24,15 @@ export const PATCH = async (request: Request) => {
     }
 
     game.status = newStatus;
-    const updatedGame = await game.save();
 
     if (newStatus == "ongoing") {
+      game.lastRoundStartTimestamp = Date.now();
+      const updatedGame = await game.save();
       const startResumeChannel = ablyRealtime.channels.get(`startResumeGame`);
       await startResumeChannel.publish(`startResumeGame`, updatedGame);
     }
+
+    const updatedGame = await game.save();
 
     const channel = ablyRealtime.channels.get(`gameUpdate`);
     await channel.publish(`gameUpdate`, updatedGame);
