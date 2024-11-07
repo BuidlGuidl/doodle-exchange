@@ -63,6 +63,10 @@ const gameSchema = new mongoose.Schema(
       ],
       default: [],
     },
+    lastRoundStartTimestamp: {
+      type: Number,
+      default: 0,
+    },
   },
   { timestamps: true },
 );

@@ -61,7 +61,8 @@ export const updateGameStatus = async (id: string, newStatus: string, token: str
   const updatedGame = await response.json();
 
   if (updatedGame.error) {
-    notification.error(updatedGame.error);
+    // notification.error(updatedGame.error);
+    console.log(updatedGame.error);
     return;
   }
 
@@ -99,7 +100,7 @@ export const updateGameRound = async (id: string, token: string, newRound: numbe
   const updatedGame = await response.json();
 
   if (updatedGame.error) {
-    notification.error(updatedGame.error);
+    // notification.error(updatedGame.error);
     console.log(updatedGame.error);
     return;
   }

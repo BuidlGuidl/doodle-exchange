@@ -1,25 +1,9 @@
 // components/CountdownOverlay.jsx
-import { useEffect, useState } from "react";
 import Leaderboard from "./Leaderboard";
 import { motion as m } from "framer-motion";
 import { Game } from "~~/types/game/game";
 
-const RoundCountdown = ({ game, onCountdownEnd }: { game: Game; onCountdownEnd: () => void }) => {
-  const [countdown, setCountdown] = useState(5);
-
-  useEffect(() => {
-    let timer: any;
-    if (countdown >= 0) {
-      timer = setTimeout(() => {
-        setCountdown(countdown - 1);
-      }, 1000);
-    } else {
-      onCountdownEnd();
-    }
-
-    return () => clearTimeout(timer);
-  }, [countdown]);
-
+const RoundCountdown = ({ game, nextRoundCountdown }: { game: Game; nextRoundCountdown: number }) => {
   return (
     <m.div
       initial={{ y: "100%" }}
@@ -32,7 +16,9 @@ const RoundCountdown = ({ game, onCountdownEnd }: { game: Game; onCountdownEnd: 
         {/* {game.currentRound == 0 ? "Game starts in" : "Waiting for next round"} */}
         Game round starts in
       </div>
-      <div className="text-white text-7xl font-semibold animate-ping-1000">{countdown <= 0 ? "GO!" : countdown}</div>
+      <div className="text-white text-7xl font-semibold animate-ping-1000">
+        {nextRoundCountdown <= 0 ? "GO!" : nextRoundCountdown}
+      </div>
       <div className="flex w-fit mt-24 md:justify-end justify-center md:fixed md:right-5 md:bottom-12">
         <Leaderboard game={game} />
       </div>

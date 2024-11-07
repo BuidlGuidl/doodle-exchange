@@ -60,6 +60,7 @@ export const PATCH = async (request: Request) => {
     }
 
     if (newRound !== game.totalRounds) game.currentRound = newRound;
+    game.lastRoundStartTimestamp = Date.now();
 
     const updatedGame = await game.save();
     const gameChannel = ablyRealtime.channels.get("gameUpdate");

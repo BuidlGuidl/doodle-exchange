@@ -24,12 +24,15 @@ export const PATCH = async (request: Request) => {
     }
 
     game.status = newStatus;
-    const updatedGame = await game.save();
 
     if (newStatus == "ongoing") {
+      game.lastRoundStartTimestamp = Date.now();
+      const updatedGame = await game.save();
       const startResumeChannel = ablyRealtime.channels.get(`startResumeGame`);
       await startResumeChannel.publish(`startResumeGame`, updatedGame);
     }
+
+    const updatedGame = await game.save();
 
     const channel = ablyRealtime.channels.get(`gameUpdate`);
     await channel.publish(`gameUpdate`, updatedGame);
@@ -38,6 +41,7 @@ export const PATCH = async (request: Request) => {
       status: 200,
     });
   } catch (error) {
+    console.log("Error updating Game Status ", (error as Error).message);
     return new NextResponse(
       JSON.stringify({
         error: "Error updating Game Status " + (error as Error).message,

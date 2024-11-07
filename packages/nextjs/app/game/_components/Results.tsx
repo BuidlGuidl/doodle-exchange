@@ -37,7 +37,7 @@ const Results = ({ game, connectedAddress }: { game: Game; connectedAddress: str
         </div>
         <h1 className="mx-auto text-2xl">Results</h1>
         <div className="flex flex-col mx-auto">
-          <table className="table max-w-xs table-zebra shadow-lg">
+          <table className="table max-w-xs shadow-lg">
             <thead>
               <tr>
                 <th>Rank</th>
