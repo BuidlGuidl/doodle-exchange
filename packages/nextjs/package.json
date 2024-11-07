@@ -39,6 +39,7 @@
     "react-canvas-draw": "^1.2.1",
     "react-color": "^2.19.3",
     "react-copy-to-clipboard": "^5.1.0",
+    "react-countdown": "^2.3.6",
     "react-dom": "^18.2.0",
     "react-hot-toast": "^2.4.0",
     "react-qr-reader": "2.2.1",

@@ -61,7 +61,8 @@ export const updateGameStatus = async (id: string, newStatus: string, token: str
   const updatedGame = await response.json();
 
   if (updatedGame.error) {
-    notification.error(updatedGame.error);
+    // notification.error(updatedGame.error);
+    console.log(updatedGame.error);
     return;
   }
 
@@ -86,20 +87,20 @@ export const updatePlayerRound = async (id: string, token: string, address: stri
   }
 };
 
-export const updateGameRound = async (id: string, token: string, pause: boolean) => {
-  const response = await fetch("/api/host/updategameround", {
+export const updateGameRound = async (id: string, token: string, newRound: number) => {
+  const response = await fetch("/api/game/updategameround", {
     method: "PATCH",
     headers: {
       Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ id: id, pause: pause }),
+    body: JSON.stringify({ id: id, newRound: newRound }),
   });
 
   const updatedGame = await response.json();
 
   if (updatedGame.error) {
-    notification.error(updatedGame.error);
+    // notification.error(updatedGame.error);
     console.log(updatedGame.error);
     return;
   }

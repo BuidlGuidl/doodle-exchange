@@ -4,6 +4,7 @@ import Leaderboard from "./Leaderboard";
 import { motion as m } from "framer-motion";
 import CanvasDraw from "react-canvas-draw";
 import { CirclePicker } from "react-color";
+import Countdown from "react-countdown";
 import { useWindowSize } from "usehooks-ts";
 import { useAccount } from "wagmi";
 import { ArrowUturnLeftIcon, TrashIcon } from "@heroicons/react/24/outline";
@@ -20,15 +21,17 @@ const Player = ({
   moveToNextRound,
   player,
   isUpdatingRound,
-  countdown,
+  updateRoundCountdown,
   token,
+  showRoundCountdown,
 }: {
   game: Game;
   moveToNextRound: (winner: string, won: boolean) => void;
   player: playerType;
   isUpdatingRound: boolean;
-  countdown: number;
+  updateRoundCountdown: number;
   token: string;
+  showRoundCountdown: boolean;
 }) => {
   const { address: connectedAddress } = useAccount();
   const drawingCanvas = useRef<CanvasDrawLines>(null);
@@ -45,9 +48,9 @@ const Player = ({
   const colorPickerSize = `${Math.round(0.95 * calculatedCanvaSize)}px`;
 
   const isLastRound = game.currentRound === game.totalRounds - 1;
-  const countdownText = isLastRound
-    ? `Ending the game in ${countdown} Seconds`
-    : `This round ends in ${countdown} Seconds`;
+  const updateRoundCountdownText = isLastRound
+    ? `Ending the game in ${updateRoundCountdown} Seconds`
+    : `This round ends in ${updateRoundCountdown} Seconds`;
 
   useEffect(() => {
     if (calculatedCanvaSize !== 1) {
@@ -134,7 +137,7 @@ const Player = ({
                 <div>
                   GPT sees <span className="font-bold">{gptAnswer}</span>
                 </div>
-                <div className={`h-6 ${!isUpdatingRound && "hidden"}`}>{countdownText}</div>
+                <div className={`h-6 ${!isUpdatingRound && "hidden"}`}>{updateRoundCountdownText}</div>
               </div>
             ) : (
               <span className="flex flex-col m-auto loading loading-spinner loading-sm"></span>
@@ -159,7 +162,7 @@ const Player = ({
               </button>
             </div>
           </div>
-          <div className={`h-6 ${!isUpdatingRound && "hidden"}`}>{countdownText}</div>
+          <div className={`h-6 ${!isUpdatingRound && "hidden"}`}>{updateRoundCountdownText}</div>
           <div className={canvasDisabled ? "cursor-not-allowed" : "cursor-none"}>
             <CanvasDraw
               key="canvas"
@@ -194,7 +197,7 @@ const Player = ({
               <button
                 className="btn btn-block btn-primary"
                 onClick={handleSubmit}
-                disabled={game.currentRound !== player.currentRound || countdown == 0}
+                disabled={game.currentRound !== player.currentRound || updateRoundCountdown == 0}
               >
                 Submit
               </button>
@@ -202,9 +205,22 @@ const Player = ({
           </div>
         </>
       )}
-      <div className="flex w-fit mt-24 lg:justify-end justify-center lg:fixed lg:right-5 lg:bottom-12">
+      <div className="flex w-fit mt-24 xl:justify-end justify-center xl:fixed xl:right-5 xl:bottom-12">
         <Leaderboard game={game} />
       </div>
+      {game.status == "ongoing" && !isUpdatingRound && !showRoundCountdown && (
+        <div>
+          Timeout{" "}
+          <Countdown
+            date={game.lastRoundStartTimestamp + 66000}
+            renderer={({ minutes, seconds }) => (
+              <span>
+                {String(minutes).padStart(2, "0")}:{String(seconds).padStart(2, "0")}
+              </span>
+            )}
+          />
+        </div>
+      )}
     </m.div>
   );
 };
