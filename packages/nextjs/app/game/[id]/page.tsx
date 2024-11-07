@@ -26,85 +26,90 @@ const GamePage = () => {
 
   const [isHost, setIsHost] = useState(false);
   const [isPlayer, setIsPlayer] = useState(false);
-  const gameRef = useRef<Game | null>(null);
-  const playerRef = useRef<playerType | null>(null);
+  const [game, setGame] = useState<Game>();
+  const gameRef = useRef(game);
+  const [player, setPlayer] = useState<playerType>();
+
   const [token, setToken] = useState("");
   const [isUpdatingRound, setIsUpdatingRound] = useState(false);
   const isUpdatingRoundRef = useRef(isUpdatingRound);
-  const [updateRoundCountdown, setCountdown] = useState(20);
-  const [showRoundCountdown, setshowRoundCountdown] = useState(false);
+  const [updateRoundCountdown, setUpdateRoundCountdown] = useState(20);
+  const [showRoundCountdown, setShowRoundCountdown] = useState(false);
   const [nextRoundCountdown, setNextRoundCountdown] = useState(5);
   const [pauseAtRoundsEnd, setPauseAtRoundsEnd] = useState(false);
   const pauseAtRoundsEndRef = useRef(pauseAtRoundsEnd);
 
-  const [isTimingout, setIsTimingout] = useState(false);
+  const [isRoundEnding, setIsRoundEnding] = useState(false);
 
   const timeoutTimeoutRef = useRef<NodeJS.Timer | null>(null);
 
   const resetTimeout = () => {
     clearTimeout(timeoutTimeoutRef.current as NodeJS.Timer);
-    setIsTimingout(false);
+    setIsRoundEnding(false);
   };
 
   useChannel("gameUpdate", message => {
-    if (gameRef.current?._id === message.data._id) {
+    if (game?._id === message.data._id) {
       const player = message.data.players.find((player: playerType) => player.address === connectedAddress);
-      playerRef.current = player;
-      gameRef.current = message.data;
+      setPlayer(player);
+      setGame(message.data);
     }
   });
 
   useChannel("startResumeGame", message => {
-    if (gameRef.current?._id === message.data._id) {
-      setshowRoundCountdown(true);
+    if (game?._id === message.data._id) {
+      setShowRoundCountdown(true);
       resetTimeout();
     }
   });
 
   useChannel("playerUpdate", message => {
-    if (playerRef.current?._id === message.data._id) {
-      playerRef.current = message.data;
+    if (player?._id === message.data._id) {
+      setPlayer(message.data);
     }
   });
 
   useChannel("updateRound", message => {
     if (isUpdatingRound) return;
-    if (gameRef.current?._id === message.data._id) {
+    if (game?._id === message.data._id) {
       setIsUpdatingRound(true);
       resetTimeout();
       notification.info(
-        gameRef.current?.currentRound == (gameRef.current?.totalRounds as number) - 1
+        game?.currentRound == (game?.totalRounds as number) - 1
           ? `Ending game in ${updateRoundCountdown} seconds`
           : `Next round begins in ${updateRoundCountdown} seconds`,
       );
 
       const interval = setInterval(() => {
-        setCountdown(oldCount => (oldCount <= 1 ? 0 : oldCount - 1));
+        setUpdateRoundCountdown(oldCount => (oldCount <= 1 ? 0 : oldCount - 1));
       }, 1000);
 
       setTimeout(() => {
-        if (gameRef.current && gameRef.current?.currentRound < gameRef.current?.totalRounds - 1) {
-          setshowRoundCountdown(true);
+        if (gameRef.current && gameRef.current.currentRound < gameRef.current.totalRounds - 1) {
+          setShowRoundCountdown(true);
           resetTimeout();
         }
       }, 22000);
 
       setTimeout(async () => {
-        if (gameRef.current) {
+        if (gameRef.current && game) {
           if (isHost && pauseAtRoundsEnd) {
-            await updateGameStatus(gameRef.current._id, "paused", token);
+            await updateGameStatus(game?._id, "paused", token);
           }
-          // if (gameRef.current?.currentRound === game.currentRound + 1) return;
-          await updateGameRound(gameRef.current._id, token, gameRef.current.currentRound + 1);
+          await updateGameRound(game._id, token, gameRef.current.currentRound + 1);
           setPauseAtRoundsEnd(false);
         }
         resetTimeout();
         setIsUpdatingRound(false);
-        setCountdown(20);
+        setUpdateRoundCountdown(20);
         clearInterval(interval);
-      }, 26000);
+      }, 24000);
     }
   });
+
+  useEffect(() => {
+    gameRef.current = game;
+  }, [game]);
 
   useEffect(() => {
     isUpdatingRoundRef.current = isUpdatingRound;
@@ -123,7 +128,7 @@ const GamePage = () => {
       }, 1000);
     } else {
       resetTimeout();
-      setshowRoundCountdown(false);
+      setShowRoundCountdown(false);
       setNextRoundCountdown(5);
     }
 
@@ -135,11 +140,11 @@ const GamePage = () => {
       resetTimeout();
       return;
     }
-    if (isTimingout) return;
-    if (gameRef.current?.status !== "ongoing") return;
+    if (isRoundEnding) return;
+    if (game?.status !== "ongoing") return;
 
     clearTimeout(timeoutTimeoutRef.current as NodeJS.Timer);
-    setIsTimingout(true);
+    setIsRoundEnding(true);
 
     const executeRoundUpdate = async () => {
       if (isUpdatingRoundRef.current) {
@@ -150,15 +155,15 @@ const GamePage = () => {
         return;
       }
 
-      setshowRoundCountdown(true);
+      setShowRoundCountdown(true);
       resetTimeout();
-      setIsTimingout(false);
+      setIsRoundEnding(false);
 
-      if (gameRef.current) {
+      if (gameRef.current && game) {
         if (isHost && pauseAtRoundsEndRef.current) {
-          await updateGameStatus(gameRef.current._id, "paused", token);
+          await updateGameStatus(game._id, "paused", token);
         }
-        await updateGameRound(gameRef.current._id, token, gameRef.current.currentRound + 1);
+        await updateGameRound(game._id, token, gameRef.current.currentRound + 1);
         setPauseAtRoundsEnd(false);
       }
       notification.info(
@@ -170,7 +175,7 @@ const GamePage = () => {
       clearTimeout(timeoutTimeoutRef.current as NodeJS.Timer);
     };
 
-    const elapsedTime = Date.now() - gameRef.current?.lastRoundStartTimestamp;
+    const elapsedTime = Date.now() - (gameRef.current?.lastRoundStartTimestamp as number);
     const remainingTime = Math.max(67000 - elapsedTime, 0);
 
     if (remainingTime <= 0) {
@@ -178,7 +183,7 @@ const GamePage = () => {
     } else {
       timeoutTimeoutRef.current = setTimeout(executeRoundUpdate, remainingTime);
     }
-  }, [showRoundCountdown, isUpdatingRound, gameRef.current]);
+  }, [showRoundCountdown, isUpdatingRound, game]);
 
   useEffect(() => {
     const loadGame = async () => {
@@ -197,20 +202,20 @@ const GamePage = () => {
       }
       if (connectedAddress === responseData.hostAddress) {
         setIsHost(true);
-        gameRef.current = responseData;
+        setGame(responseData);
         setToken(loadToken());
       } else if (responseData.players.some((player: playerType) => player.address === connectedAddress)) {
         const player = responseData.players.find((player: playerType) => player.address === connectedAddress);
-        playerRef.current = player;
+        setPlayer(player);
         setIsPlayer(true);
-        gameRef.current = responseData;
+        setGame(responseData);
         setToken(loadToken());
       } else {
         if (connectedAddress) {
           const data = await joinGame(id as string, connectedAddress);
           if (data.success) {
-            gameRef.current = data.game;
-            playerRef.current = data.player;
+            setGame(data.game);
+            setPlayer(data.player);
             setToken(data.token);
             setIsPlayer(true);
           } else {
@@ -238,10 +243,10 @@ const GamePage = () => {
         console.log(responseData.error);
         return;
       } else {
-        gameRef.current = responseData;
+        setGame(responseData);
         if (responseData.players.some((player: playerType) => player.address === connectedAddress)) {
           const player = responseData.players.find((player: playerType) => player.address === connectedAddress);
-          playerRef.current = player;
+          setPlayer(player);
         }
       }
     };
@@ -253,16 +258,16 @@ const GamePage = () => {
   }, [id]);
 
   const moveToNextRound = async (address: string, won: boolean) => {
-    if (gameRef.current) await updatePlayerRound(gameRef.current._id, token, address, won);
+    if (game) await updatePlayerRound(game._id, token, address, won);
   };
 
-  if (gameRef.current?.status === "finished") {
+  if (game?.status === "finished") {
     if (client.connection.state == "connected") client.close();
-    return <Results game={gameRef.current as Game} connectedAddress={connectedAddress || ""} />;
-  } else if (isHost && gameRef.current) {
+    return <Results game={game as Game} connectedAddress={connectedAddress || ""} />;
+  } else if (isHost && game) {
     return (
       <Host
-        game={gameRef.current as Game}
+        game={game as Game}
         token={token}
         isUpdatingRound={isUpdatingRound}
         updateRoundCountdown={updateRoundCountdown}
@@ -271,14 +276,14 @@ const GamePage = () => {
         showRoundCountdown={showRoundCountdown}
       />
     );
-  } else if (isPlayer && gameRef.current && gameRef.current?.status === "lobby") {
-    return <Lobby game={gameRef.current as Game} connectedAddress={connectedAddress || ""} />;
-  } else if (isPlayer && gameRef.current) {
+  } else if (isPlayer && game && game.status === "lobby") {
+    return <Lobby game={game as Game} connectedAddress={connectedAddress || ""} />;
+  } else if (isPlayer && game) {
     return (
       <AnimatePresence initial={false}>
-        {showRoundCountdown && gameRef.current.status == "ongoing" ? (
-          <RoundCountdown game={gameRef.current} nextRoundCountdown={nextRoundCountdown} />
-        ) : gameRef.current.status == "paused" ? (
+        {showRoundCountdown && game.status == "ongoing" ? (
+          <RoundCountdown game={game} nextRoundCountdown={nextRoundCountdown} />
+        ) : game.status == "paused" ? (
           <m.div
             initial={{ y: "100%" }}
             animate={{ y: "0%" }}
@@ -290,9 +295,9 @@ const GamePage = () => {
           </m.div>
         ) : (
           <Player
-            game={gameRef.current as Game}
+            game={game as Game}
             moveToNextRound={moveToNextRound}
-            player={playerRef.current as playerType}
+            player={player as playerType}
             isUpdatingRound={isUpdatingRound}
             updateRoundCountdown={updateRoundCountdown}
             token={token}

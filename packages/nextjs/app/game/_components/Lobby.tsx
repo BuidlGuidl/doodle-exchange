@@ -41,7 +41,7 @@ const Lobby = ({ game, connectedAddress }: { game: Game; connectedAddress: strin
               <UserCard
                 address={player?.address}
                 username={player?.userName}
-                className={`${player?.address === connectedAddress ? "bg-primary" : "bg-secondary"} rounded-full btn-sm flex items-center my-0 shadow-md gap-0`}
+                className={`${player?.address === connectedAddress ? "bg-primary" : "bg-secondary"} rounded-full p-2 flex items-center shadow-md`}
               />
             </span>
           );

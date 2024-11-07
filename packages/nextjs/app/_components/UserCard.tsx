@@ -13,7 +13,7 @@ type UserCardProps = {
 const UserCard = ({ address, username, className = "", status, round }: UserCardProps) => {
   return (
     <div className={`${className}`}>
-      <div className="flex flex-col ">
+      <div className="flex flex-col">
         <span className="flex items-center gap-0.5">
           <Image
             alt={address + " loogie"}
@@ -24,7 +24,7 @@ const UserCard = ({ address, username, className = "", status, round }: UserCard
           />
           {username}
         </span>
-        <span className="text-[0.7rem] ml-auto -mt-2 font-semibold">{status}</span>
+        {status && <span className="text-[0.7rem] ml-auto -mt-2 font-semibold">{status}</span>}
       </div>
       {round != undefined && (
         <div>
