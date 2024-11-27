@@ -75,7 +75,6 @@ const GamePage = () => {
       );
 
       dispatch({ type: "SET_UPDATE_ROUND_COUNTDOWN", payload: timeRemaining });
-      dispatch({ type: "SET_SHOW_ROUND_COUNTDOWN", payload: true });
 
       const countdownInterval = setInterval(() => {
         const now = Date.now();
@@ -87,6 +86,7 @@ const GamePage = () => {
           clearInterval(countdownInterval);
           dispatch({ type: "SET_SHOW_ROUND_COUNTDOWN", payload: false });
           dispatch({ type: "SET_UPDATING_ROUND", payload: false });
+          dispatch({ type: "SET_SHOW_ROUND_COUNTDOWN", payload: true });
         }
       }, 1000);
 

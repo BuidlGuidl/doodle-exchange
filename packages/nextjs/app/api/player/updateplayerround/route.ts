@@ -56,6 +56,17 @@ export const PATCH = async (request: Request) => {
     }
     roundEntry.won = won;
 
+    const anyPlayerAhead = game.players.some((p: Player) => p.currentRound > game.currentRound);
+    if (!anyPlayerAhead) {
+      const roundChannel = ablyRealtime.channels.get("updateRound");
+      const nextRoundTimestamp = Date.now() + 20000;
+      game.nextRoundTimestamp = nextRoundTimestamp;
+      await game.save();
+      await roundChannel.publish("updateRound", game);
+    } else {
+      await game.save();
+    }
+
     if (currentPlayerRound === game.totalRounds - 1) {
       player.status = "waiting";
     } else {
@@ -63,15 +74,6 @@ export const PATCH = async (request: Request) => {
       player.status = "waiting";
     }
 
-    const anyPlayerAhead = game.players.some((p: Player) => p.currentRound > game.currentRound);
-    if (!anyPlayerAhead) {
-      const roundChannel = ablyRealtime.channels.get("updateRound");
-      const nextRoundTimestamp = Date.now() + 20000;
-      game.nextRoundTimestamp = nextRoundTimestamp;
-      await roundChannel.publish("updateRound", game);
-    }
-
-    await game.save();
     const gameChannel = ablyRealtime.channels.get("gameUpdate");
     const playerChannel = ablyRealtime.channels.get("playerUpdate");
     if (!anyPlayerAhead) await gameChannel.publish("gameUpdate", game);
