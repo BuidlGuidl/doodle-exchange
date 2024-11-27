@@ -8,30 +8,25 @@ export const PATCH = async (request: Request) => {
     const body = await request.json();
     const { id, newRound } = body;
     await connectdb();
-    const game = await Game.findById(id);
+
+    const game = await Game.findOneAndUpdate(
+      { _id: id, status: { $ne: "finished" }, currentRound: { $lt: newRound } },
+      { $set: { currentRound: newRound, lastRoundStartTimestamp: Date.now() } },
+      { new: true },
+    );
 
     if (!game) {
-      return new NextResponse(JSON.stringify({ error: "Game not found" }), { status: 403 });
-    }
-
-    if (game.status === "finished" || game.currentRound > game.totalRounds - 1) {
-      const errorMessage = game.status === "finished" ? "Game has finished" : "Game is on the last round";
-      return new NextResponse(JSON.stringify({ error: errorMessage }), { status: 403 });
-    }
-
-    if (newRound == game.currentRound) {
       return new NextResponse(
         JSON.stringify({
-          game: game,
+          error: "Game not found or invalid round update",
         }),
-        {
-          status: 200,
-        },
+        { status: 403 },
       );
     }
 
     const isFinalRound = newRound === game.totalRounds;
 
+    // Update players only if the round has changed
     for (const player of game.players) {
       const currentPlayerRound = player.currentRound;
       if (currentPlayerRound < newRound) {
@@ -40,11 +35,7 @@ export const PATCH = async (request: Request) => {
 
         let roundEntry = player.rounds.find((r: any) => r.round === currentPlayerRound);
         if (!roundEntry) {
-          roundEntry = {
-            round: currentPlayerRound,
-            points: 0,
-            won: false,
-          };
+          roundEntry = { round: currentPlayerRound, points: 0, won: false };
           player.rounds.push(roundEntry);
         } else if (!isFinalRound) {
           player.rounds[currentPlayerRound].points = 0;
@@ -53,36 +44,23 @@ export const PATCH = async (request: Request) => {
       }
     }
 
-    let message = `Moving to round ${newRound + 1}`;
-    if (newRound === game.totalRounds) {
-      game.status = "finished";
-      message = "Ended game successfully";
-    }
+    if (isFinalRound) game.status = "finished";
 
-    if (newRound !== game.totalRounds) game.currentRound = newRound;
-    game.lastRoundStartTimestamp = Date.now();
+    await game.save(); // Save the updated game state
 
-    const updatedGame = await game.save();
     const gameChannel = ablyRealtime.channels.get("gameUpdate");
-    await gameChannel.publish("gameUpdate", updatedGame);
+    await gameChannel.publish("gameUpdate", game);
 
     return new NextResponse(
       JSON.stringify({
-        message: message,
-        game: updatedGame,
+        message: isFinalRound ? "Ended game successfully" : `Moving to round ${newRound + 1}`,
+        game,
       }),
-      {
-        status: 200,
-      },
+      { status: 200 },
     );
   } catch (error) {
-    return new NextResponse(
-      JSON.stringify({
-        error: "Error updating Game Round " + (error as Error).message,
-      }),
-      {
-        status: 500,
-      },
-    );
+    return new NextResponse(JSON.stringify({ error: "Error updating Game Round: " + (error as Error).message }), {
+      status: 500,
+    });
   }
 };
