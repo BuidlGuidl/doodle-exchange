@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useReducer, useRef } from "react";
 import { useParams } from "next/navigation";
 import { useRouter } from "next/navigation";
 import Host from "../_components/Host";
@@ -12,139 +12,142 @@ import { useAbly, useChannel } from "ably/react";
 import { AnimatePresence } from "framer-motion";
 import { motion as m } from "framer-motion";
 import { useAccount } from "wagmi";
+import { gameReducer, initialState } from "~~/context/gameContext";
 import useGameData from "~~/hooks/doodleExchange/useGameData";
 import { Game, Player as playerType } from "~~/types/game/game";
 import { joinGame, updateGameRound, updateGameStatus, updatePlayerRound } from "~~/utils/doodleExchange/api/apiUtils";
 import { notification } from "~~/utils/scaffold-eth";
 
 const GamePage = () => {
+  const [state, dispatch] = useReducer(gameReducer, initialState);
+
   const { id } = useParams();
   const { loadToken } = useGameData();
   const { address: connectedAddress } = useAccount();
   const router = useRouter();
   const client = useAbly();
 
-  const [isHost, setIsHost] = useState(false);
-  const [isPlayer, setIsPlayer] = useState(false);
-  const [game, setGame] = useState<Game>();
-  const gameRef = useRef(game);
-  const [player, setPlayer] = useState<playerType>();
-
-  const [token, setToken] = useState("");
-  const [isUpdatingRound, setIsUpdatingRound] = useState(false);
-  const isUpdatingRoundRef = useRef(isUpdatingRound);
-  const [updateRoundCountdown, setUpdateRoundCountdown] = useState(20);
-  const [showRoundCountdown, setShowRoundCountdown] = useState(false);
-  const [nextRoundCountdown, setNextRoundCountdown] = useState(5);
-  const [pauseAtRoundsEnd, setPauseAtRoundsEnd] = useState(false);
-  const pauseAtRoundsEndRef = useRef(pauseAtRoundsEnd);
-
-  const [isRoundEnding, setIsRoundEnding] = useState(false);
-
+  const gameRef = useRef(state.game);
+  const isUpdatingRoundRef = useRef(state.isUpdatingRound);
+  const pauseAtRoundsEndRef = useRef(state.pauseAtRoundsEnd);
   const timeoutTimeoutRef = useRef<NodeJS.Timer | null>(null);
 
   const resetTimeout = () => {
     clearTimeout(timeoutTimeoutRef.current as NodeJS.Timer);
-    setIsRoundEnding(false);
+    dispatch({ type: "SET_ROUND_ENDING", payload: false });
   };
 
   useChannel("gameUpdate", message => {
-    if (game?._id === message.data._id) {
+    if (state.game?._id === message.data._id) {
       const player = message.data.players.find((player: playerType) => player.address === connectedAddress);
-      setPlayer(player);
-      setGame(message.data);
+      dispatch({ type: "SET_PLAYER_DATA", payload: player });
+      dispatch({ type: "SET_GAME", payload: message.data });
     }
   });
 
   useChannel("startResumeGame", message => {
-    if (game?._id === message.data._id) {
-      setShowRoundCountdown(true);
+    if (state.game?._id === message.data._id) {
+      dispatch({ type: "SET_SHOW_ROUND_COUNTDOWN", payload: true });
       resetTimeout();
     }
   });
 
   useChannel("playerUpdate", message => {
-    if (player?._id === message.data._id) {
-      setPlayer(message.data);
+    if (state.player?._id === message.data._id) {
+      dispatch({ type: "SET_PLAYER_DATA", payload: message.data });
     }
   });
 
   useChannel("updateRound", message => {
-    if (isUpdatingRound) return;
-    if (game?._id === message.data._id) {
-      setIsUpdatingRound(true);
+    if (state.isUpdatingRound) return;
+    if (state.game?._id === message.data.game._id) {
+      dispatch({ type: "SET_UPDATING_ROUND", payload: true });
       resetTimeout();
+
+      const { nextRoundTimestamp } = message.data;
+      const currentTime = Date.now();
+      const timeRemaining = Math.max(Math.floor((nextRoundTimestamp - currentTime) / 1000), 0);
+
       notification.info(
-        game?.currentRound == (game?.totalRounds as number) - 1
-          ? `Ending game in ${updateRoundCountdown} seconds`
-          : `Next round begins in ${updateRoundCountdown} seconds`,
+        state.game?.currentRound == (state.game?.totalRounds as number) - 1
+          ? `Ending game in ${timeRemaining} seconds`
+          : `Next round begins in ${timeRemaining} seconds`,
       );
 
-      const interval = setInterval(() => {
-        setUpdateRoundCountdown(oldCount => (oldCount <= 1 ? 0 : oldCount - 1));
+      dispatch({ type: "SET_UPDATE_ROUND_COUNTDOWN", payload: timeRemaining });
+      dispatch({ type: "SET_SHOW_ROUND_COUNTDOWN", payload: true });
+
+      const countdownInterval = setInterval(() => {
+        const now = Date.now();
+        const remaining = Math.max(Math.floor((nextRoundTimestamp - now) / 1000), 0);
+
+        dispatch({ type: "SET_UPDATE_ROUND_COUNTDOWN", payload: remaining });
+
+        if (remaining <= 0) {
+          clearInterval(countdownInterval);
+          dispatch({ type: "SET_SHOW_ROUND_COUNTDOWN", payload: false });
+          dispatch({ type: "SET_UPDATING_ROUND", payload: false });
+        }
       }, 1000);
 
-      setTimeout(() => {
-        if (gameRef.current && gameRef.current.currentRound < gameRef.current.totalRounds - 1) {
-          setShowRoundCountdown(true);
-          resetTimeout();
-        }
-      }, 22000);
-
-      setTimeout(async () => {
-        if (gameRef.current && game) {
-          if (isHost && pauseAtRoundsEnd) {
-            await updateGameStatus(game?._id, "paused", token);
+      const roundTransitionTimeout = setTimeout(
+        async () => {
+          if (gameRef.current && state.game) {
+            if (state.isHost && state.pauseAtRoundsEnd) {
+              await updateGameStatus(state.game?._id, "paused", state.token);
+            }
+            await updateGameRound(state.game._id, state.token, gameRef.current.currentRound + 1);
+            dispatch({ type: "SET_PAUSE_AT_ROUNDS_END", payload: false });
           }
-          await updateGameRound(game._id, token, gameRef.current.currentRound + 1);
-          setPauseAtRoundsEnd(false);
-        }
-        resetTimeout();
-        setIsUpdatingRound(false);
-        setUpdateRoundCountdown(20);
-        clearInterval(interval);
-      }, 24000);
+
+          resetTimeout();
+          dispatch({ type: "SET_UPDATING_ROUND", payload: false });
+          dispatch({ type: "SET_UPDATE_ROUND_COUNTDOWN", payload: 20 });
+          clearTimeout(roundTransitionTimeout);
+        },
+        timeRemaining * 1000 + 2000,
+      );
     }
   });
 
   useEffect(() => {
-    gameRef.current = game;
-  }, [game]);
+    gameRef.current = state.game;
+  }, [state.game]);
 
   useEffect(() => {
-    isUpdatingRoundRef.current = isUpdatingRound;
-  }, [isUpdatingRound]);
+    isUpdatingRoundRef.current = state.isUpdatingRound;
+  }, [state.isUpdatingRound]);
 
   useEffect(() => {
-    pauseAtRoundsEndRef.current = pauseAtRoundsEnd;
-  }, [pauseAtRoundsEnd]);
+    pauseAtRoundsEndRef.current = state.pauseAtRoundsEnd;
+  }, [state.pauseAtRoundsEnd]);
 
   useEffect(() => {
-    if (!showRoundCountdown) return;
+    if (!state.showRoundCountdown) return;
     let timer: any;
-    if (nextRoundCountdown >= 0) {
+    if (state.nextRoundCountdown >= 0) {
       timer = setTimeout(() => {
-        setNextRoundCountdown(nextRoundCountdown - 1);
+        dispatch({ type: "SET_NEXT_ROUND_COUNTDOWN", payload: state.nextRoundCountdown - 1 });
       }, 1000);
     } else {
       resetTimeout();
-      setShowRoundCountdown(false);
-      setNextRoundCountdown(5);
+      dispatch({ type: "SET_SHOW_ROUND_COUNTDOWN", payload: false });
+      dispatch({ type: "SET_NEXT_ROUND_COUNTDOWN", payload: 5 });
     }
 
     return () => clearTimeout(timer);
-  }, [nextRoundCountdown, showRoundCountdown]);
+  }, [state.nextRoundCountdown, state.showRoundCountdown]);
 
   useEffect(() => {
-    if (showRoundCountdown || isUpdatingRound) {
+    if (state.showRoundCountdown || state.isUpdatingRound) {
       resetTimeout();
       return;
     }
-    if (isRoundEnding) return;
-    if (game?.status !== "ongoing") return;
+    if (state.isRoundEnding) return;
+    if (state.game?.status !== "ongoing") return;
 
     clearTimeout(timeoutTimeoutRef.current as NodeJS.Timer);
-    setIsRoundEnding(true);
+    dispatch({ type: "SET_ROUND_ENDING", payload: true });
 
     const executeRoundUpdate = async () => {
       if (isUpdatingRoundRef.current) {
@@ -155,16 +158,16 @@ const GamePage = () => {
         return;
       }
 
-      setShowRoundCountdown(true);
+      dispatch({ type: "SET_SHOW_ROUND_COUNTDOWN", payload: true });
       resetTimeout();
-      setIsRoundEnding(false);
+      dispatch({ type: "SET_ROUND_ENDING", payload: true });
 
-      if (gameRef.current && game) {
-        if (isHost && pauseAtRoundsEndRef.current) {
-          await updateGameStatus(game._id, "paused", token);
+      if (gameRef.current && state.game) {
+        if (state.isHost && pauseAtRoundsEndRef.current) {
+          await updateGameStatus(state.game._id, "paused", state.token);
         }
-        await updateGameRound(game._id, token, gameRef.current.currentRound + 1);
-        setPauseAtRoundsEnd(false);
+        await updateGameRound(state.game._id, state.token, gameRef.current.currentRound + 1);
+        dispatch({ type: "SET_PAUSE_AT_ROUNDS_END", payload: false });
       }
       notification.info(
         gameRef.current?.currentRound == (gameRef.current?.totalRounds as number) - 1
@@ -183,7 +186,7 @@ const GamePage = () => {
     } else {
       timeoutTimeoutRef.current = setTimeout(executeRoundUpdate, remainingTime);
     }
-  }, [showRoundCountdown, isUpdatingRound, game]);
+  }, [state.showRoundCountdown, state.isUpdatingRound, state.game]);
 
   useEffect(() => {
     const loadGame = async () => {
@@ -201,23 +204,23 @@ const GamePage = () => {
         return;
       }
       if (connectedAddress === responseData.hostAddress) {
-        setIsHost(true);
-        setGame(responseData);
-        setToken(loadToken());
+        dispatch({ type: "SET_HOST", payload: true });
+        dispatch({ type: "SET_GAME", payload: responseData });
+        dispatch({ type: "SET_TOKEN", payload: loadToken() });
       } else if (responseData.players.some((player: playerType) => player.address === connectedAddress)) {
         const player = responseData.players.find((player: playerType) => player.address === connectedAddress);
-        setPlayer(player);
-        setIsPlayer(true);
-        setGame(responseData);
-        setToken(loadToken());
+        dispatch({ type: "SET_PLAYER", payload: true });
+        dispatch({ type: "SET_GAME", payload: responseData });
+        dispatch({ type: "SET_TOKEN", payload: loadToken() });
+        dispatch({ type: "SET_PLAYER_DATA", payload: player });
       } else {
         if (connectedAddress) {
           const data = await joinGame(id as string, connectedAddress);
           if (data.success) {
-            setGame(data.game);
-            setPlayer(data.player);
-            setToken(data.token);
-            setIsPlayer(true);
+            dispatch({ type: "SET_PLAYER", payload: true });
+            dispatch({ type: "SET_GAME", payload: data.game });
+            dispatch({ type: "SET_TOKEN", payload: data.token });
+            dispatch({ type: "SET_PLAYER_DATA", payload: data.player });
           } else {
             router.push(`/`);
           }
@@ -229,61 +232,33 @@ const GamePage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [connectedAddress, id]);
 
-  useEffect(() => {
-    const refreshGame = async () => {
-      const response = await fetch(`/api/game/${id}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-
-      const responseData = await response.json();
-      if (responseData.error) {
-        console.log(responseData.error);
-        return;
-      } else {
-        setGame(responseData);
-        if (responseData.players.some((player: playerType) => player.address === connectedAddress)) {
-          const player = responseData.players.find((player: playerType) => player.address === connectedAddress);
-          setPlayer(player);
-        }
-      }
-    };
-
-    const interval = setInterval(() => {
-      refreshGame();
-    }, 5000);
-    return () => clearInterval(interval);
-  }, [id]);
-
   const moveToNextRound = async (address: string, won: boolean) => {
-    if (game) await updatePlayerRound(game._id, token, address, won);
+    if (state.game) await updatePlayerRound(state.game._id, state.token, address, won);
   };
 
-  if (game?.status === "finished") {
+  if (state.game?.status === "finished") {
     if (client.connection.state == "connected") client.close();
-    return <Results game={game as Game} connectedAddress={connectedAddress || ""} />;
-  } else if (isHost && game) {
+    return <Results game={state.game as Game} connectedAddress={connectedAddress || ""} />;
+  } else if (state.isHost && state.game) {
     return (
       <Host
-        game={game as Game}
-        token={token}
-        isUpdatingRound={isUpdatingRound}
-        updateRoundCountdown={updateRoundCountdown}
-        pauseAtRoundsEnd={pauseAtRoundsEnd}
-        setPauseAtRoundsEnd={setPauseAtRoundsEnd}
-        showRoundCountdown={showRoundCountdown}
+        game={state.game as Game}
+        token={state.token}
+        isUpdatingRound={state.isUpdatingRound}
+        updateRoundCountdown={state.updateRoundCountdown}
+        pauseAtRoundsEnd={state.pauseAtRoundsEnd}
+        showRoundCountdown={state.showRoundCountdown}
+        dispatch={dispatch}
       />
     );
-  } else if (isPlayer && game && game.status === "lobby") {
-    return <Lobby game={game as Game} connectedAddress={connectedAddress || ""} />;
-  } else if (isPlayer && game) {
+  } else if (state.isPlayer && state.game && state.game.status === "lobby") {
+    return <Lobby game={state.game as Game} connectedAddress={connectedAddress || ""} />;
+  } else if (state.isPlayer && state.game) {
     return (
       <AnimatePresence initial={false}>
-        {showRoundCountdown && game.status == "ongoing" ? (
-          <RoundCountdown game={game} nextRoundCountdown={nextRoundCountdown} />
-        ) : game.status == "paused" ? (
+        {state.showRoundCountdown && state.game.status == "ongoing" ? (
+          <RoundCountdown game={state.game} nextRoundCountdown={state.nextRoundCountdown} />
+        ) : state.game.status == "paused" ? (
           <m.div
             initial={{ y: "100%" }}
             animate={{ y: "0%" }}
@@ -295,13 +270,13 @@ const GamePage = () => {
           </m.div>
         ) : (
           <Player
-            game={game as Game}
+            game={state.game as Game}
             moveToNextRound={moveToNextRound}
-            player={player as playerType}
-            isUpdatingRound={isUpdatingRound}
-            updateRoundCountdown={updateRoundCountdown}
-            token={token}
-            showRoundCountdown={showRoundCountdown}
+            player={state.player as playerType}
+            isUpdatingRound={state.isUpdatingRound}
+            updateRoundCountdown={state.updateRoundCountdown}
+            token={state.token}
+            showRoundCountdown={state.showRoundCountdown}
           />
         )}
       </AnimatePresence>
