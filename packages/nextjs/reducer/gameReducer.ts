@@ -1,6 +1,6 @@
 import { Game, Player } from "~~/types/game/game";
 
- export const initialState = {
+export const initialState = {
   isHost: false,
   isPlayer: false,
   game: null as Game | null,
@@ -27,7 +27,7 @@ export type GameAction =
   | { type: "SET_PAUSE_AT_ROUNDS_END"; payload: boolean }
   | { type: "SET_ROUND_ENDING"; payload: boolean };
 
- export function gameReducer(state: typeof initialState, action: GameAction) {
+export function gameReducer(state: typeof initialState, action: GameAction) {
   switch (action.type) {
     case "SET_HOST":
       return { ...state, isHost: action.payload };

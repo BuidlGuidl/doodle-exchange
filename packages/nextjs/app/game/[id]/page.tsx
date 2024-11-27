@@ -12,8 +12,8 @@ import { useAbly, useChannel } from "ably/react";
 import { AnimatePresence } from "framer-motion";
 import { motion as m } from "framer-motion";
 import { useAccount } from "wagmi";
-import { gameReducer, initialState } from "~~/context/gameContext";
 import useGameData from "~~/hooks/doodleExchange/useGameData";
+import { gameReducer, initialState } from "~~/reducer/gameReducer";
 import { Game, Player as playerType } from "~~/types/game/game";
 import { joinGame, updateGameRound, updateGameStatus, updatePlayerRound } from "~~/utils/doodleExchange/api/apiUtils";
 import { notification } from "~~/utils/scaffold-eth";
@@ -60,11 +60,11 @@ const GamePage = () => {
 
   useChannel("updateRound", message => {
     if (state.isUpdatingRound) return;
-    if (state.game?._id === message.data.game._id) {
+    if (state.game?._id === message.data._id) {
       dispatch({ type: "SET_UPDATING_ROUND", payload: true });
       resetTimeout();
 
-      const { nextRoundTimestamp } = message.data;
+      const nextRoundTimestamp = message.data.nextRoundTimestamp;
       const currentTime = Date.now();
       const timeRemaining = Math.max(Math.floor((nextRoundTimestamp - currentTime) / 1000), 0);
 

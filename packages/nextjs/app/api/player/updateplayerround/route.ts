@@ -67,7 +67,8 @@ export const PATCH = async (request: Request) => {
     if (!anyPlayerAhead) {
       const roundChannel = ablyRealtime.channels.get("updateRound");
       const nextRoundTimestamp = Date.now() + 20000;
-      await roundChannel.publish("updateRound", { game, nextRoundTimestamp });
+      game.nextRoundTimestamp = nextRoundTimestamp;
+      await roundChannel.publish("updateRound", game);
     }
 
     await game.save();

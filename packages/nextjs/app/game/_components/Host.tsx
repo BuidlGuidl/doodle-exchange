@@ -5,7 +5,7 @@ import Countdown from "react-countdown";
 import { PlayIcon, PlayPauseIcon, UserIcon } from "@heroicons/react/24/outline";
 import CopyButton from "~~/app/_components/CopyButton";
 import UserCard from "~~/app/_components/UserCard";
-import { GameAction } from "~~/context/gameContext";
+import { GameAction } from "~~/reducer/gameReducer";
 import { Game } from "~~/types/game/game";
 import { updateGameStatus } from "~~/utils/doodleExchange/api/apiUtils";
 import { notification } from "~~/utils/scaffold-eth";

@@ -3,8 +3,8 @@
   "private": true,
   "version": "0.1.0",
   "scripts": {
-    "dev": "concurrently \"next dev\" \" yarn run cron\"",
-    "start": "concurrently \"next dev\" \" yarn run cron\"",
+    "dev": "concurrently \"next dev\" ",
+    "start": "concurrently \"next dev\" ",
     "build": "next build",
     "serve": "next start",
     "lint": "next lint",

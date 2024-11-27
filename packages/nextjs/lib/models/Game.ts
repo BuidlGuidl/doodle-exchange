@@ -67,6 +67,10 @@ const gameSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    nextRoundTimestamp: {
+      type: Number,
+      default: 0,
+    },
   },
   { timestamps: true },
 );
