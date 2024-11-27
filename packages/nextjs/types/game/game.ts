@@ -40,6 +40,7 @@ export interface Game {
   currentRound: number;
   drawings: Drawings[];
   lastRoundStartTimestamp: number;
+  nextRoundTimestamp: number;
 }
 
 export interface CanvasDrawLines extends CanvasDraw {

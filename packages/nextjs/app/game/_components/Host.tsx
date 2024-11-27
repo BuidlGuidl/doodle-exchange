@@ -1,10 +1,11 @@
-import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
+import React, { Dispatch, useEffect, useState } from "react";
 import DrawingsList from "./DrawingsList";
 import QRCode from "qrcode.react";
 import Countdown from "react-countdown";
 import { PlayIcon, PlayPauseIcon, UserIcon } from "@heroicons/react/24/outline";
 import CopyButton from "~~/app/_components/CopyButton";
 import UserCard from "~~/app/_components/UserCard";
+import { GameAction } from "~~/reducer/gameReducer";
 import { Game } from "~~/types/game/game";
 import { updateGameStatus } from "~~/utils/doodleExchange/api/apiUtils";
 import { notification } from "~~/utils/scaffold-eth";
@@ -15,7 +16,7 @@ const Host = ({
   isUpdatingRound,
   updateRoundCountdown,
   pauseAtRoundsEnd,
-  setPauseAtRoundsEnd,
+  dispatch,
   showRoundCountdown,
 }: {
   game: Game;
@@ -23,7 +24,7 @@ const Host = ({
   isUpdatingRound: boolean;
   updateRoundCountdown: number;
   pauseAtRoundsEnd: boolean;
-  setPauseAtRoundsEnd: Dispatch<SetStateAction<boolean>>;
+  dispatch: Dispatch<GameAction>;
   showRoundCountdown: boolean;
 }) => {
   const [inviteUrl, setInviteUrl] = useState("");
@@ -85,7 +86,7 @@ const Host = ({
               if (game.status == "paused") {
                 updateGameStatus(game._id, "ongoing", token);
               } else {
-                setPauseAtRoundsEnd(true);
+                dispatch({ type: "SET_PAUSE_AT_ROUNDS_END", payload: true });
                 notification.info(`Game will pause and the end of this round`);
               }
             }}
