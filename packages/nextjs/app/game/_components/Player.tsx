@@ -71,12 +71,39 @@ const Player = ({
       setCanvasDisabled(false);
       return;
     }
+
     updatePlayerStatus(game._id, "classifying", token, connectedAddress || "");
     setFinalDrawing(drawingDataUrl);
     console.log(drawingDataUrl);
-    const response = await getGpt4oClassify(drawingDataUrl);
-    let imageFbLink = "";
-    if (response?.answer) {
+
+    const MAX_RETRIES = 2;
+    const INITIAL_DELAY = 500;
+    let attempts = 0;
+    let success = false;
+    let response = null;
+
+    while (attempts < MAX_RETRIES && !success) {
+      try {
+        response = await getGpt4oClassify(drawingDataUrl);
+        if (response?.answer) {
+          success = true;
+        } else {
+          throw new Error("Classification response is empty");
+        }
+      } catch (error) {
+        attempts++;
+        const delay = INITIAL_DELAY * Math.pow(2, attempts);
+        if (attempts < MAX_RETRIES) {
+          console.log(`Attempt ${attempts} failed, retrying in ${delay / 1000} seconds...`);
+          await new Promise(resolve => setTimeout(resolve, delay));
+        } else {
+          console.error("Max retries reached. Failed to classify drawing.");
+        }
+      }
+    }
+
+    if (success && response?.answer) {
+      let imageFbLink = "";
       imageFbLink = await uploadToFirebase(
         game.wordsList?.[player.currentRound],
         response.answer,
